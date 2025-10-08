@@ -1,22 +1,27 @@
-import { AuthToken, User } from "tweeter-shared";
+import { AuthToken, FakeData, Status, User} from "tweeter-shared";
+import StatusService from "../model.service/StatusService";
 import { UserService } from "../model.service/UserService";
 
-export interface UserItemView{
-    addItems: (items: User[]) => void
+export interface StatusItemView{
+    addItems: (items: Status[]) => void
     displayErrorMessage: (message: string) => void
 }
 
-export abstract class UserItemPresenter{
-    private _view: UserItemView;
+export abstract class StatusItemPresenter{
+    private _view: StatusItemView;
     private _hasMoreItems = true;
-    private _lastItem: User | null = null;
+    private _lastItem: Status | null = null;
+    private _pageSize: number | null = null;
+    private statusService: StatusService;
     private userService: UserService;
 
-    protected constructor(view: UserItemView){
+    
+    protected constructor(view: StatusItemView){
         this._view = view;
+        this.statusService = new StatusService();
         this.userService = new UserService();
-    }
 
+    }
     protected get view () {
         return this._view;
     }
@@ -25,7 +30,11 @@ export abstract class UserItemPresenter{
         return this._lastItem;
     }
 
-    protected set lastItem(value: User | null){
+    protected get pageSize() {
+        return this._pageSize;
+    }
+
+    protected set lastItem(value: Status | null){
         this._lastItem = value;
     }
 
@@ -49,6 +58,5 @@ export abstract class UserItemPresenter{
         return this.userService.getUser(authToken, alias)
     };
 
-    public abstract loadMoreItems (authToken: AuthToken, userAlias: string) : void 
-
+    public abstract loadMoreItems(authToken: AuthToken, userAlias: string, itemDescription: string): Promise<void>;
 }
