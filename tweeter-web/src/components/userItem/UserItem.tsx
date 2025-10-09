@@ -1,8 +1,6 @@
-import { Link, useNavigate } from "react-router-dom";
-import { AuthToken, User, FakeData, Status } from "tweeter-shared";
-import { useMessageActions } from "../toaster/MessageHooks";
+import { Link} from "react-router-dom";
+import {User} from "tweeter-shared";
 import { useNavigateToUserHook} from "../appNavbar/NavToUserHooks";
-import { useUserInfoActionsHooks, useUserInfoHooks } from "../userInfo/UserInfoHooks";
 
 interface Props {
   user: User;
@@ -10,19 +8,7 @@ interface Props {
 }
 
 const UserItem = (props: Props) => {
-  const { displayErrorMessage } = useMessageActions();
-  const { displayedUser, authToken } = useUserInfoHooks();
-  const { setDisplayedUser } = useUserInfoActionsHooks();
   const navigateToUser = useNavigateToUserHook();
-
-
-  const getUser = async (
-    authToken: AuthToken,
-    alias: string
-  ): Promise<User | null> => {
-    // TODO: Replace with the result of calling server
-    return FakeData.instance.findUserByAlias(alias);
-  };
 
   return (
     <div className="col bg-light mx-0 px-0">

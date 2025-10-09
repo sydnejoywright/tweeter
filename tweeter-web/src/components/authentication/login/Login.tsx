@@ -1,15 +1,16 @@
 import "./Login.css";
 import "bootstrap/dist/css/bootstrap.css";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthenticationFormLayout from "../AuthenticationFormLayout";
-import { AuthToken, FakeData, User } from "tweeter-shared";
 import AuthenticationFields from "../authenticationFields/AuthenticationFields";
 import { useMessageActions } from "../../toaster/MessageHooks";
 import { useUserInfoActionsHooks } from "../../userInfo/UserInfoHooks";
+import { LoginPresenter, LoginView } from "../../../presenter/LoginPresenter";
 
 interface Props {
   originalUrl?: string;
+  presenterFactory: (view: LoginView) => LoginPresenter
 }
 
 const Login = (props: Props) => {
@@ -26,75 +27,31 @@ const Login = (props: Props) => {
     return !alias || !password;
   };
 
+  const listener: LoginView = {
+    displayErrorMessage: displayErrorMessage,
+    setLoading: setIsLoading,
+    updateUserInfo: (user, authToken, remember) =>
+      updateUserInfo(user, user, authToken, remember),
+    navigateTo: (url) => navigate(url),
+  }
+
+  const presenterRef = useRef<LoginPresenter | null>(null)
+  if(!presenterRef.current){
+    presenterRef.current = props.presenterFactory(listener);
+  }
+
+  const login = async() => {
+    await presenterRef.current?.doLogin(alias, password, rememberMe, props.originalUrl!);
+  }
+
   const loginOnEnter = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key == "Enter" && !checkSubmitButtonStatus()) {
-      doLogin();
+      presenterRef.current!.doLogin(alias, password, rememberMe, props.originalUrl!);
     }
-  };
-
-  const doLogin = async () => {
-    try {
-      setIsLoading(true);
-
-      const [user, authToken] = await login(alias, password);
-
-      updateUserInfo(user, user, authToken, rememberMe);
-
-      if (!!props.originalUrl) {
-        navigate(props.originalUrl);
-      } else {
-        navigate(`/feed/${user.alias}`);
-      }
-    } catch (error) {
-      displayErrorMessage(
-        `Failed to log user in because of exception: ${error}`,
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const login = async (
-    alias: string,
-    password: string
-  ): Promise<[User, AuthToken]> => {
-    // TODO: Replace with the result of calling the server
-    const user = FakeData.instance.firstUser;
-
-    if (user === null) {
-      throw new Error("Invalid alias or password");
-    }
-
-    return [user, FakeData.instance.authToken];
   };
 
   const inputFieldFactory = () => {
     return (
-      // <>
-      //   <div className="form-floating">
-      //     <input
-      //       type="text"
-      //       className="form-control"
-      //       size={50}
-      //       id="aliasInput"
-      //       placeholder="name@example.com"
-      //       onKeyDown={loginOnEnter}
-      //       onChange={(event) => setAlias(event.target.value)}
-      //     />
-      //     <label htmlFor="aliasInput">Alias</label>
-      //   </div>
-      //   <div className="form-floating mb-3">
-      //     <input
-      //       type="password"
-      //       className="form-control bottom"
-      //       id="passwordInput"
-      //       placeholder="Password"
-      //       onKeyDown={loginOnEnter}
-      //       onChange={(event) => setPassword(event.target.value)}
-      //     />
-      //     <label htmlFor="passwordInput">Password</label>
-      //   </div>
-      // </>
       <AuthenticationFields onKeyDown={loginOnEnter} 
                             onAliasChange={setAlias} 
                             onPasswordChange={setPassword}
@@ -120,7 +77,7 @@ const Login = (props: Props) => {
       setRememberMe={setRememberMe}
       submitButtonDisabled={checkSubmitButtonStatus}
       isLoading={isLoading}
-      submit={doLogin}
+      submit={login}
     />
   );
 };
