@@ -2,37 +2,45 @@ import "./AppNavbar.css";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import Image from "react-bootstrap/Image";
-import { AuthToken } from "tweeter-shared";
 import { useMessageActions } from "../toaster/MessageHooks";
 import { useUserInfoHooks, useUserInfoActionsHooks} from "../userInfo/UserInfoHooks";
+import { useRef } from "react";
+import { LogoutView, LogoutPresenter } from "../../presenter/LogoutPresenter";
 
-const AppNavbar = () => {
+interface Props {
+  originalUrl?: string;
+  presenterFactory?: (view: LogoutView) => LogoutPresenter;
+}
+
+const AppNavbar = (props?: Props) => {
   const location = useLocation();
   const { authToken, displayedUser } = useUserInfoHooks();
   const { clearUserInfo } = useUserInfoActionsHooks();
   const navigate = useNavigate();
   const { displayInfoMessage, displayErrorMessage, deleteMessage } = useMessageActions();
 
+  const listener: LogoutView = {
+    displayErrorMessage,
+    displayInfoMessage: (message: string, duration: number) =>
+      displayInfoMessage(message, duration), // returns toastId
+    deleteMessage: (toastId: string) => deleteMessage(toastId),
+    clearUserInfo: () => clearUserInfo(),
+    navigateTo: (url: string) => navigate(url),
+  }
+
+  const defaultFactory = (view: LogoutView) =>
+    new LogoutPresenter(view);
+
+  const factory = props?.presenterFactory ?? defaultFactory;
+
+  const presenterRef = useRef<LogoutPresenter | null>(null)
+  if(!presenterRef.current){
+    presenterRef.current = factory(listener);
+  }
+
   const logOut = async () => {
-    const loggingOutToastId = displayInfoMessage("Logging Out...", 0);
-
-    try {
-      await logout(authToken!);
-
-      deleteMessage(loggingOutToastId);
-      clearUserInfo();
-      navigate("/login");
-    } catch (error) {
-      displayErrorMessage(
-        `Failed to log user out because of exception: ${error}`,
-      );
-    }
-  };
-
-  const logout = async (authToken: AuthToken): Promise<void> => {
-    // Pause so we can see the logging out message. Delete when the call to the server is implemented.
-    await new Promise((res) => setTimeout(res, 1000));
-  };
+    await presenterRef.current!.logOut(authToken!)
+  }
 
   return (
     <Navbar

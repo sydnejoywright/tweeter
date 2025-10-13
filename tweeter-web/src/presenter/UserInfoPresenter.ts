@@ -82,7 +82,7 @@ export class UserInfoPresenter{
         try {
           this._view.setLoading(true);
           followingUserToast = this._view.displayInfoMessage!(
-            `Following ${this._view.displayedUser!.name}...`,
+            `Following ${this._view.displayedUser()!.name}...`,
             0
           );
     
@@ -114,7 +114,7 @@ export class UserInfoPresenter{
         try {
           this._view.setLoading(true);
           unfollowingUserToast = this._view.displayInfoMessage(
-            `Unfollowing ${this._view.displayedUser!.name}...`,
+            `Unfollowing ${this._view.displayedUser()!.name}...`,
             0
           );
     
