@@ -7,7 +7,7 @@ import { useRef } from "react";
 import { NavToUserPresenter, NavToUserView } from "../../presenter/NavToUserPresenter";
   
   interface Props{
-      presenterFactory?: (view: NavToUserView) => NavToUserPresenter
+      presenterFactory: (view: NavToUserView) => NavToUserPresenter
   } 
   export const useNavigateToUserHook = (props?: Props) => {
     const {displayedUser, authToken} = useUserInfoHooks();
