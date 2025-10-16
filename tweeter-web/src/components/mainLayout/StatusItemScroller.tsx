@@ -8,8 +8,6 @@ import { useUserInfoHooks, useUserInfoActionsHooks } from "../userInfo/UserInfoH
 import { StatusItemPresenter} from "../../presenter/StatusItemPresenter";
 import { PagedItemView } from "../../presenter/PagedItemPresenter";
 
-export const PAGE_SIZE = 10;
-
 interface Props{
     itemDescription : string,
     featureURL : string,

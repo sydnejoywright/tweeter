@@ -6,11 +6,12 @@ import AuthenticationFormLayout from "../AuthenticationFormLayout";
 import AuthenticationFields from "../authenticationFields/AuthenticationFields";
 import { useMessageActions } from "../../toaster/MessageHooks";
 import { useUserInfoActionsHooks } from "../../userInfo/UserInfoHooks";
-import { LoginPresenter, LoginView } from "../../../presenter/LoginPresenter";
+import { LoginPresenter } from "../../../presenter/LoginPresenter";
+import { AuthMessages } from "../../../presenter/AuthPresenter";
 
 interface Props {
   originalUrl?: string;
-  presenterFactory: (view: LoginView) => LoginPresenter
+  presenterFactory: (view: AuthMessages) => LoginPresenter
 }
 
 const Login = (props: Props) => {
@@ -27,12 +28,13 @@ const Login = (props: Props) => {
     return !alias || !password;
   };
 
-  const listener: LoginView = {
+  const listener: AuthMessages = {
     displayErrorMessage: displayErrorMessage,
     setLoading: setIsLoading,
     updateUserInfo: (user, authToken, remember) =>
       updateUserInfo(user, user, authToken, remember),
     navigateTo: (url) => navigate(url),
+    rememberMe: rememberMe,
   }
 
   const presenterRef = useRef<LoginPresenter | null>(null)

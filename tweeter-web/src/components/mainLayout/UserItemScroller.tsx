@@ -8,8 +8,6 @@ import { useUserInfoHooks, useUserInfoActionsHooks } from "../userInfo/UserInfoH
 import { UserItemPresenter } from "../../presenter/UserItemPresenter";
 import { PagedItemView } from "../../presenter/PagedItemPresenter";
 
-export const PAGE_SIZE = 10;
-
 interface Props{
     featureURL : string,
     presenterFactory: (view: PagedItemView<User>) => UserItemPresenter

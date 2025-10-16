@@ -7,10 +7,11 @@ import { Buffer } from "buffer";
 import AuthenticationFields from "../authenticationFields/AuthenticationFields";
 import { useMessageActions } from "../../toaster/MessageHooks";
 import { useUserInfoActionsHooks } from "../../userInfo/UserInfoHooks";
-import { RegisterPresenter, RegisterView } from "../../../presenter/RegisterPresenter";
+import { RegisterPresenter } from "../../../presenter/RegisterPresenter";
+import { AuthMessages } from "../../../presenter/AuthPresenter";
 
 interface Props{
-    presenterFactory: (view: RegisterView) => RegisterPresenter
+    presenterFactory: (view: AuthMessages) => RegisterPresenter
 }
 
 const Register = (props: Props) => {
@@ -28,7 +29,7 @@ const Register = (props: Props) => {
   const { updateUserInfo } = useUserInfoActionsHooks();
   const { displayErrorMessage } = useMessageActions();
 
-  const listener: RegisterView = {
+  const listener: AuthMessages = {
     displayErrorMessage: displayErrorMessage,
     setLoading: setIsLoading,
     updateUserInfo(user, authToken, remember) {
