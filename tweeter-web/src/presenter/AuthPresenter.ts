@@ -26,4 +26,6 @@ export abstract class AuthPresenter<V extends AuthMessages>{
               this.view.setLoading(false);
             }
     }
+
 }
+

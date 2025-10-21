@@ -12,6 +12,7 @@ import { AuthMessages } from "../../../presenter/AuthPresenter";
 interface Props {
   originalUrl?: string;
   presenterFactory: (view: AuthMessages) => LoginPresenter
+  presenter?: LoginPresenter
 }
 
 const Login = (props: Props) => {
@@ -39,7 +40,7 @@ const Login = (props: Props) => {
 
   const presenterRef = useRef<LoginPresenter | null>(null)
   if(!presenterRef.current){
-    presenterRef.current = props.presenterFactory(listener);
+    presenterRef.current = props.presenter ?? props.presenterFactory(listener);
   }
 
   const login = async() => {

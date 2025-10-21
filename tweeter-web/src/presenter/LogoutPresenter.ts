@@ -19,11 +19,15 @@ export class LogoutPresenter{
         this.userService = new UserService();
     }
 
+    public get service(){
+      return this.userService;
+    }
+
     public async logOut(authToken: AuthToken){
         const loggingOutToastId = this._view.displayInfoMessage("Logging Out...", 0);
     
         try {
-          await this.userService.logout(authToken!);
+          await this.service.logout(authToken!);
     
           this._view.deleteMessage(loggingOutToastId);
           this._view.clearUserInfo();
