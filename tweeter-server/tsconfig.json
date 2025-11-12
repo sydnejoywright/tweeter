@@ -1,24 +1,11 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    // File Layout
-    // "rootDir": "./src",
-    "outDir": "./dist",
-    "module": "nodenext",
-    "target": "es2022",
-    "types": [],
-    // Other Outputs
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
-    // Stricter Typechecking Options
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    // Recommended Options
-    "strict": true,
-    "jsx": "react-jsx",
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true,
+      "target": "ES2022",
+      "module": "commonjs",
+      "outDir": "./dist",
+      "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true,
+      "strict": true,
+      "skipLibCheck": true
   }
 }

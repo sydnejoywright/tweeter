@@ -1,0 +1,6 @@
+BUCKET='sydne-wright-tweeter-lambdas'
+LAMBDA_ROLE='arn:aws:iam::202533522791:role/lambda_role'
+EDIT_LAMBDALIST='
+tweeterGetFollowees | lambda/follow/GetFolloweesLambda.handler
+'
+LAMBDALAYER_ARN=arn:aws:lambda:us-east-1:202533522791:layer:lambdaDependencies:1

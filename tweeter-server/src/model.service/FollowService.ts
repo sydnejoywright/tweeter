@@ -1,51 +1,33 @@
-import { AuthToken, User, FakeData, PagedUserItemRequest} from "tweeter-shared";
+import { AuthToken, User, FakeData, UserDto} from "tweeter-shared";
 import { Service } from "./Service";
-import { ServerFacade } from "../network/ServerFacade";
 
 export class FollowService implements Service{
-      private serverFacade = new ServerFacade();
 
       public async loadMoreFollowees(
-        authToken: AuthToken,
+        token: string,
         userAlias: string,
         pageSize: number,
-        lastItem: User | null
-      ): Promise<[User[], boolean]> {
-        const request: PagedUserItemRequest = {
-          token: authToken.token,
-          userAlias: userAlias,
-          pageSize: pageSize,
-          lastItem: lastItem?.dto ?? null,
-        };
+        lastItem: UserDto | null
+      ): Promise<[UserDto[], boolean]> {
         // TODO: Replace with the result of calling server
-        try{
-          return await this.serverFacade.getMoreFollowees(request);
-        } catch (error) {
-          console.error("Error loading followees:", error);
-          return [[], false];
-        }
+        return this.getFakeData(lastItem, pageSize, userAlias);
       };
     
       public async loadMoreFollowers(
-        authToken: AuthToken,
+        token: string,
         userAlias: string,
         pageSize: number,
-        lastItem: User | null
-      ): Promise<[User[], boolean]> {
-        const request: PagedUserItemRequest = {
-          token: authToken.token,
-          userAlias: userAlias,
-          pageSize: pageSize,
-          lastItem: lastItem?.dto ?? null,
-        };
+        lastItem: UserDto | null
+      ): Promise<[UserDto[], boolean]> {
         // TODO: Replace with the result of calling server
-        try{
-          return await this.serverFacade.getMoreFollowers(request);
-        } catch (error) {
-          console.error("Error loading followers:", error);
-          return [[], false];
-        }
+        return this.getFakeData(lastItem, pageSize, userAlias);
       };
+
+      private async getFakeData(lastItem: UserDto | null, pageSize: number, userAlias: string) : Promise<[UserDto[], boolean]> {
+        const [items, hasMore] = FakeData.instance.getPageOfUsers(User.fromDto(lastItem), pageSize, userAlias);
+        const dtos = items.map((user) => user.dto);
+        return [dtos, hasMore];
+      }
 
       public async getIsFollowerStatus(
         authToken: AuthToken,
