@@ -5,28 +5,34 @@ const buffer_1 = require("buffer");
 const tweeter_shared_1 = require("tweeter-shared");
 class UserService {
     async getUser(authToken, alias) {
+        return this.getFakeUser(alias);
         // TODO: Replace with the result of calling server
         return tweeter_shared_1.FakeData.instance.findUserByAlias(alias);
     }
     ;
+    async getFakeUser(userAlias) {
+        const user = tweeter_shared_1.FakeData.instance.findUserByAlias(userAlias);
+        if (!user) {
+            return null;
+        }
+        return user.dto;
+    }
     async login(alias, password) {
         // TODO: Replace with the result of calling the server
         const user = tweeter_shared_1.FakeData.instance.firstUser;
         if (user === null) {
             throw new Error("Invalid alias or password");
         }
-        return [user, tweeter_shared_1.FakeData.instance.authToken];
+        return [user.dto, tweeter_shared_1.FakeData.instance.authToken.token];
     }
     ;
     async register(firstName, lastName, alias, password, userImageBytes, imageFileExtension) {
-        // Not neded now, but will be needed when you make the request to the server in milestone 3
         const imageStringBase64 = buffer_1.Buffer.from(userImageBytes).toString("base64");
-        // TODO: Replace with the result of calling the server
         const user = tweeter_shared_1.FakeData.instance.firstUser;
         if (user === null) {
             throw new Error("Invalid registration");
         }
-        return [user, tweeter_shared_1.FakeData.instance.authToken];
+        return [user, tweeter_shared_1.FakeData.instance.authToken.token];
     }
     ;
     async logout(authToken) {

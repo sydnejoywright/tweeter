@@ -1,6 +1,7 @@
+import { User } from "../domain/User";
+
 export interface StatusDto{
-    readonly firstName: string,
-    readonly lastName: string,
-    readonly alias: string,
-    readonly imageUrl: string
+    readonly post : string;
+    readonly user : User;
+    readonly timestamp : number;
 }

@@ -104,21 +104,7 @@ Resources:
           #
           # Endpoint definitions
           #
-
-          /user/get:  ##### TODO: Change "/user/get" to the actual endpoint URL
-            post:
-              consumes: *commonConsumes
-              produces: *commonProduces
-              x-amazon-apigateway-integration:
-                type: aws
-                httpMethod: POST
-                uri:
-                  ##### TODO: Change "userGetFunction" to the actual function name. (Don't delete the $, {}, or .Arn suffix.)
-                  ##### The function name must agree with the "Web API Lambda functions" section below.
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${userGetFunction.Arn}/invocations
-                requestTemplates: *commonRequestTemplates
-                responses: *commonAmazonResponses
-              responses: *commonSwaggerResponses
+          
 
           /user/create:  ##### TODO: Set endpoint URL
             post:
@@ -164,7 +150,122 @@ Resources:
                 responses: *commonAmazonResponses
               responses: *commonSwaggerResponses
 
+          /follower/count:
+            post:
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getFollowerCountFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
 
+          /follower/status:
+            post:
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getIsFollowerStatusFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
+
+          /followee/count:
+            post:
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getFolloweeCountFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
+
+          /feed/list:
+            post:
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getFeedItemsFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
+
+          /story/list:
+            post:
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getStoryItemsFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
+
+          /user/get:
+            post:
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getUserFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
+
+          /user/login:
+            post:
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${loginFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
+
+          /user/logout:
+            post:
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${logoutFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
+
+          /user/register:
+            post:
+              consumes: *commonConsumes
+              produces: *commonProduces
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${registerFunction.Arn}/invocations
+                requestTemplates: *commonRequestTemplates
+                responses: *commonAmazonResponses
+              responses: *commonSwaggerResponses
   #
   # SQS Queues  (This will become relevant in Milestone 4. For M3, leave this section commented out.)
   #
@@ -195,23 +296,23 @@ Resources:
 
   ##### TODO: Change "userGetFunction" to the actual function name.
   ##### It must match the function name in the "Endpoint definitons" section above.
-  userGetFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      ##### TODO: Change "userGetFunction" to the actual function name.
-      FunctionName: userGetFunction
-      ##### TODO: Modify Handler property to match your code. This identifies the exact function that the lambda should run.
-      Handler: handlers/users/UserGetHandler.userGetHandler
-      Policies: *commonPolicies
-      Events:
-        PostApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref tweeterApi
-            ##### TODO: Modify the Path property to the actual endpoint URL.
-            ##### It must match the URL in the "Endpoint definitions" section above.
-            Path: /user/get
-            Method: POST
+  # userGetFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     ##### TODO: Change "userGetFunction" to the actual function name.
+  #     FunctionName: userGetFunction
+  #     ##### TODO: Modify Handler property to match your code. This identifies the exact function that the lambda should run.
+  #     Handler: handlers/users/UserGetHandler.userGetHandler
+  #     Policies: *commonPolicies
+  #     Events:
+  #       PostApi:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref tweeterApi
+  #           ##### TODO: Modify the Path property to the actual endpoint URL.
+  #           ##### It must match the URL in the "Endpoint definitions" section above.
+  #           Path: /user/get
+  #           Method: POST
 
   userCreateFunction:  ##### TODO: Set function name
     Type: AWS::Serverless::Function
@@ -243,6 +344,20 @@ Resources:
             Path: /followee/list
             Method: POST
 
+  getFolloweeCountFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getFolloweeCountFunction
+      Handler: lambda/follow/GetFolloweeCountLambda.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /followee/count
+            Method: POST
+
 
   getFollowersFunction:
     Type: AWS::Serverless::Function
@@ -258,6 +373,118 @@ Resources:
             Path: /follower/list
             Method: POST
 
+  getFollowerCountFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getFollowerCountFunction
+      Handler: lambda/follow/GetFollowerCountLambda.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /follower/count
+            Method: POST
+
+  getIsFollowerStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getIsFollowerStatusFunction
+      Handler: lambda/follow/GetIsFollowerStatusLambda.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /follower/status
+            Method: POST
+
+
+  getFeedItemsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getFeedItemsFunction
+      Handler: lambda/status/GetFeedItemsLambda.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /feed/list
+            Method: POST
+
+  getStoryItemsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getStoryItemsFunction
+      Handler: lambda/status/GetStoryItemsLambda.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /story/list
+            Method: POST
+
+  getUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: getUserFunction
+      Handler: lambda/user/GetUserLambda.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /user/get
+            Method: POST
+
+  loginFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: loginFunction
+      Handler: lambda/user/LoginLambda.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /user/login
+            Method: POST
+
+  logoutFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: logoutFunction
+      Handler: lambda/user/LogoutLambda.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /user/logout
+            Method: POST
+
+  registerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: registerFunction
+      Handler: lambda/user/RegisterLambda.handler
+      Policies: *commonPolicies
+      Events:
+        PostApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref tweeterApi
+            Path: /user/register
+            Method: POST
 
   #
   # SQS Queue Lambda Functions  (This will become relevant in Milestone 4. For M3, leave this section commented out.)

@@ -12,7 +12,7 @@ const handler = async (request) => {
         success: true,
         message: null,
         user: user,
-        authToken: authToken.token,
+        authToken: authToken,
     };
 };
 exports.handler = handler;

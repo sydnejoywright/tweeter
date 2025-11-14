@@ -24,4 +24,5 @@ export class Follow {
     public set followee(value: User) {
         this._followee = value;
     }    
+    
 }

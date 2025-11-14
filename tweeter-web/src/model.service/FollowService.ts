@@ -1,4 +1,4 @@
-import { AuthToken, User, FakeData, PagedUserItemRequest} from "tweeter-shared";
+import { AuthToken, User, FakeData, PagedUserItemRequest, GetFollowCountRequest} from "tweeter-shared";
 import { Service } from "./Service";
 import { ServerFacade } from "../network/ServerFacade";
 
@@ -52,24 +52,49 @@ export class FollowService implements Service{
         user: User,
         selectedUser: User
         ): Promise<boolean> {
-        // TODO: Replace with the result of calling server
-        return FakeData.instance.isFollower();
+          const request = {
+            token: authToken.token,
+            user: user,
+            selectedUser: selectedUser
+          }
+          try{
+            return await this.serverFacade.getIsFollowerStatus(request);
+          } catch (error) {
+            console.error("Error loading follow status:", error);
+            return false;
+          }
         };
     
       public async getFolloweeCount (
           authToken: AuthToken,
           user: User
         ): Promise<number> {
-          // TODO: Replace with the result of calling server
-          return FakeData.instance.getFolloweeCount(user.alias);
+          const request: GetFollowCountRequest = {
+            token: authToken.token,
+            user: user?.dto ?? null,
+          };
+          try{
+            return await this.serverFacade.getFolloweeCount(request);
+          } catch (error) {
+            console.error("Error loading followee count:", error);
+            return 0;
+          }
         };
   
       public async getFollowerCount (
-      authToken: AuthToken,
-      user: User
-      ): Promise<number>{
-      // TODO: Replace with the result of calling server
-      return FakeData.instance.getFollowerCount(user.alias);
+        authToken: AuthToken,
+        user: User
+      ): Promise<number> {
+        const request: GetFollowCountRequest = {
+          token: authToken.token,
+          user: user?.dto ?? null,
+        };
+        try{
+          return await this.serverFacade.getFollowerCount(request);
+        } catch (error) {
+          console.error("Error loading follower count:", error);
+          return 0;
+        }
       };
   
       public async follow(

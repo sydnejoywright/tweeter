@@ -1,14 +1,27 @@
 import { Buffer } from "buffer";
-import { AuthToken, User, FakeData } from "tweeter-shared";
+import { AuthToken, User, FakeData, GetUserRequest } from "tweeter-shared";
 import { Service } from "./Service";
+import { ServerFacade } from "../network/ServerFacade";
 
 export class UserService implements Service{
-    public async getUser  (
-        authToken: AuthToken,
-        alias: string
+    private serverFacade = new ServerFacade();
+
+    public async getUser(
+      authToken: AuthToken,
+      alias: string
     ): Promise<User | null> {
-        // TODO: Replace with the result of calling server
-        return FakeData.instance.findUserByAlias(alias);
+      console.log("UserService.getUser called with:", { authToken, alias });
+      const request: GetUserRequest = {
+        token: authToken.token,
+        userAlias: alias
+      };
+  
+      try {
+        return await this.serverFacade.getUser(request);
+      } catch (error) {
+        console.error("Error loading user:", error);
+        return null;
+      }
     };
 
     public async login(
@@ -16,13 +29,11 @@ export class UserService implements Service{
         password: string
       ): Promise<[User, AuthToken]> {
         // TODO: Replace with the result of calling the server
-        const user = FakeData.instance.firstUser;
-    
-        if (user === null) {
-          throw new Error("Invalid alias or password");
+        const request = {
+          alias: alias,
+          password: password
         }
-
-        return [user, FakeData.instance.authToken];
+        return await this.serverFacade.login(request)
       };
 
       public async register (
@@ -36,20 +47,32 @@ export class UserService implements Service{
         // Not neded now, but will be needed when you make the request to the server in milestone 3
         const imageStringBase64: string =
             Buffer.from(userImageBytes).toString("base64");
-    
-        // TODO: Replace with the result of calling the server
-        const user = FakeData.instance.firstUser;
-    
-        if (user === null) {
-            throw new Error("Invalid registration");
+        
+        const request = {
+          firstName: firstName,
+          lastName: lastName,
+          alias: alias,
+          password: password,
+          userImageBytes: imageStringBase64,
+          imageFileExtension: imageFileExtension
         }
+
+        return await this.serverFacade.register(request)
+        // const user = FakeData.instance.firstUser;
     
-        return [user, FakeData.instance.authToken];
+        // if (user === null) {
+        //     throw new Error("Invalid registration");
+        // }
+    
+        // return [user, FakeData.instance.authToken];
         };
 
       public async logout(authToken: AuthToken): Promise<void>{
         // Pause so we can see the logging out message. Delete when the call to the server is implemented.
-        await new Promise((res) => setTimeout(res, 1000));
+        const request = {authToken: authToken}
+        return await this.serverFacade.logout(request);
+        
+        // new Promise((res) => setTimeout(res, 1000));
       };
     
 }

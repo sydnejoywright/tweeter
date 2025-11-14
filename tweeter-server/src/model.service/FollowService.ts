@@ -30,28 +30,27 @@ export class FollowService implements Service{
       }
 
       public async getIsFollowerStatus(
-        authToken: AuthToken,
-        user: User,
-        selectedUser: User
+        authToken: string,
+        user: UserDto,
+        selectedUser: UserDto
         ): Promise<boolean> {
-        // TODO: Replace with the result of calling server
+          console.log("Hit server side FollowService!")
         return FakeData.instance.isFollower();
         };
     
       public async getFolloweeCount (
-          authToken: AuthToken,
-          user: User
+          authToken: string,
+          user: UserDto
         ): Promise<number> {
-          // TODO: Replace with the result of calling server
-          return FakeData.instance.getFolloweeCount(user.alias);
+          return FakeData.instance.getFolloweeCount(User.fromDto(user)!.alias);
         };
   
       public async getFollowerCount (
-      authToken: AuthToken,
-      user: User
+      authToken: string,
+      user: UserDto
       ): Promise<number>{
       // TODO: Replace with the result of calling server
-      return FakeData.instance.getFollowerCount(user.alias);
+        return FakeData.instance.getFollowerCount(User.fromDto(user)!.alias);
       };
   
       public async follow(
@@ -63,8 +62,8 @@ export class FollowService implements Service{
       
           // TODO: Call the server
       
-          const followerCount = await this.getFollowerCount(authToken, userToFollow);
-          const followeeCount = await this.getFolloweeCount(authToken, userToFollow);
+          const followerCount = await this.getFollowerCount(authToken.token, userToFollow);
+          const followeeCount = await this.getFolloweeCount(authToken.token, userToFollow);
       
           return [followerCount, followeeCount];
         };
@@ -78,8 +77,8 @@ export class FollowService implements Service{
       
           // TODO: Call the server
       
-          const followerCount = await this.getFollowerCount(authToken, userToUnfollow);
-          const followeeCount = await this.getFolloweeCount(authToken, userToUnfollow);
+          const followerCount = await this.getFollowerCount(authToken.token, userToUnfollow);
+          const followeeCount = await this.getFolloweeCount(authToken.token, userToUnfollow);
       
           return [followerCount, followeeCount];
         };
