@@ -36,8 +36,8 @@ class FollowService {
         // Pause so we can see the follow message. Remove when connected to the server
         await new Promise((f) => setTimeout(f, 2000));
         // TODO: Call the server
-        const followerCount = await this.getFollowerCount(authToken.token, userToFollow);
-        const followeeCount = await this.getFolloweeCount(authToken.token, userToFollow);
+        const followerCount = await this.getFollowerCount(authToken, userToFollow);
+        const followeeCount = await this.getFolloweeCount(authToken, userToFollow);
         return [followerCount, followeeCount];
     }
     ;
@@ -45,8 +45,8 @@ class FollowService {
         // Pause so we can see the unfollow message. Remove when connected to the server
         await new Promise((f) => setTimeout(f, 2000));
         // TODO: Call the server
-        const followerCount = await this.getFollowerCount(authToken.token, userToUnfollow);
-        const followeeCount = await this.getFolloweeCount(authToken.token, userToUnfollow);
+        const followerCount = await this.getFollowerCount(authToken, userToUnfollow);
+        const followeeCount = await this.getFolloweeCount(authToken, userToUnfollow);
         return [followerCount, followeeCount];
     }
     ;

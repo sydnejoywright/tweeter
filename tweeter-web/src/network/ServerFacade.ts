@@ -1,5 +1,7 @@
 import {
   AuthToken,
+  FollowRequest,
+  FollowResponse,
   GetFeedItemsRequest,
   GetFeedItemsResponse,
   GetFollowCountRequest,
@@ -13,6 +15,7 @@ import {
     LogoutRequest,
     PagedUserItemRequest,
     PagedUserItemResponse,
+    PostStatusRequest,
     RegisterRequest,
     RegisterResponse,
     Status,
@@ -125,8 +128,33 @@ import {
       }
     }
 
-    public async follow(){}
-    public async unfollow(){}
+    public async follow(request: FollowRequest): Promise <[followerCount: number, followeeCount: number]>{
+      const response = await this.clientCommunicator.doPost<
+      FollowRequest,
+      FollowResponse
+    >(request, "/follow/follow");
+
+      if(response.success && response.followeeCount && response.followerCount){
+        return [response.followerCount, response.followeeCount]
+      }else{
+        console.error(response);
+        throw new Error(response.message ?? undefined);
+      }
+    }
+
+    public async unfollow(request: FollowRequest): Promise <[followerCount: number, followeeCount: number]>{
+      const response = await this.clientCommunicator.doPost<
+      FollowRequest,
+      FollowResponse
+    >(request, "/follow/unfollow");
+
+      if(response.success && response.followeeCount && response.followerCount){
+        return [response.followerCount, response.followeeCount]
+      }else{
+        console.error(response);
+        throw new Error(response.message ?? undefined);
+      }
+    }
 
     ///STATUS//////////////////////////////////////////////////////////////////////////////
     public async getFeedItems(
@@ -180,7 +208,22 @@ import {
         throw new Error(response.message ?? undefined);
       }
     }
-    public async postStatus(){}
+
+    public async postStatus(
+      request: PostStatusRequest
+    ): Promise<void> {
+      const response = await this.clientCommunicator.doPost<
+        PostStatusRequest,
+        TweeterResponse
+      >(request, "/status/poststatus");
+
+      if(response.success){
+        return;
+      }else{
+        console.error(response);
+        throw new Error(response.message ?? undefined);
+      }
+    }
 
     ///USER//////////////////////////////////////////////////////////////////////////////
     public async getUser(request:GetUserRequest) : Promise<User | null>{

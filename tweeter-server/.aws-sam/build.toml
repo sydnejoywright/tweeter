@@ -7,6 +7,6 @@ architecture = "x86_64"
 handler = "handlers/users/UserGetHandler.userGetHandler"
 manifest_hash = ""
 packagetype = "Zip"
-functions = ["userCreateFunction", "getFolloweesFunction", "getFolloweeCountFunction", "getFollowersFunction", "getFollowerCountFunction", "getIsFollowerStatusFunction", "getFeedItemsFunction", "getStoryItemsFunction", "getUserFunction", "loginFunction", "logoutFunction", "registerFunction"]
+functions = ["userCreateFunction", "getFolloweesFunction", "getFolloweeCountFunction", "getFollowersFunction", "getFollowerCountFunction", "getIsFollowerStatusFunction", "getFeedItemsFunction", "getStoryItemsFunction", "getUserFunction", "loginFunction", "logoutFunction", "registerFunction", "followFunction", "unfollowFunction", "postStatusFunction"]
 
 [layer_build_definitions]

@@ -17,7 +17,6 @@ export class StatusService implements Service{
           pageSize: pageSize,
           lastItem: lastItem?.dto ?? null,
         };
-        // TODO: Replace with the result of calling server
         try{
           return await this.serverFacade.getFeedItems(request);
         } catch (error) {
@@ -38,7 +37,6 @@ export class StatusService implements Service{
           pageSize: pageSize,
           lastItem: lastItem?.dto ?? null,
         };
-        // TODO: Replace with the result of calling server
         try{
           return await this.serverFacade.getStoryItems(request);
         } catch (error) {
@@ -51,10 +49,11 @@ export class StatusService implements Service{
         authToken: AuthToken,
         newStatus: Status
       ): Promise<void> {
-        // Pause so we can see the logging out message. Remove when connected to the server
-        await new Promise((f) => setTimeout(f, 2000));
-    
-        // TODO: Call the server to post the status
+        const request = {
+          authToken: authToken.token,
+          newStatus: newStatus
+        }
+        return await this.serverFacade.postStatus(request)
       };
 }
 

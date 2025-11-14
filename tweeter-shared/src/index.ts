@@ -24,6 +24,8 @@ export type {GetFollowCountRequest} from "./model/net/request/follow/GetFollowCo
 export type {GetIsFollowerStatusRequest} from "./model/net/request/follow/GetIsFollowerStatusRequest"
 export type {LogoutRequest} from "./model/net/request/user/LogoutRequest"
 export type {RegisterRequest} from "./model/net/request/user/RegisterRequest"
+export type {PostStatusRequest} from "./model/net/request/status/PostStatusRequest"
+
 
 
 //Responses
