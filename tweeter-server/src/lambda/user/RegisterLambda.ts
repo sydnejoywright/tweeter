@@ -1,7 +1,6 @@
 import {RegisterRequest, RegisterResponse } from "tweeter-shared";
 import UserService from "../../model.service/UserService";
 
-
 export const handler = async (request: RegisterRequest) : Promise<RegisterResponse> =>  {
     const userService = new UserService();
     //turn the string back to a bytes array

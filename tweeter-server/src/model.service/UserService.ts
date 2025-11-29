@@ -1,5 +1,4 @@
-import { Buffer } from "buffer";
-import { AuthToken, User, FakeData, UserDto } from "tweeter-shared";
+import { FakeData, UserDto } from "tweeter-shared";
 import { Service } from "./Service";
 
 export class UserService implements Service{
@@ -8,8 +7,6 @@ export class UserService implements Service{
         alias: string
     ): Promise<UserDto | null> {
         return this.getFakeUser(alias)
-        // TODO: Replace with the result of calling server
-        return FakeData.instance.findUserByAlias(alias);
     };
 
     private async getFakeUser(userAlias: string) : Promise<UserDto | null> {
@@ -24,7 +21,6 @@ export class UserService implements Service{
         alias: string,
         password: string
       ): Promise<[UserDto, string]> {
-        // TODO: Replace with the result of calling the server
         const user = FakeData.instance.firstUser;
     
         if (user === null) {
@@ -41,16 +37,13 @@ export class UserService implements Service{
         userImageBytes: Uint8Array,
         imageFileExtension: string
         ): Promise<[UserDto, string]> {
-        const imageStringBase64: string =
-            Buffer.from(userImageBytes).toString("base64");
-
-            const user = FakeData.instance.firstUser;
+        
+        const user = FakeData.instance.firstUser;
     
         if (user === null) {
             throw new Error("Invalid registration");
         }
-    
-        return [user, FakeData.instance.authToken.token];
+        return [user.dto, FakeData.instance.authToken.token];
         };
 
       public async logout(
@@ -59,7 +52,6 @@ export class UserService implements Service{
         // Pause so we can see the logging out message. Delete when the call to the server is implemented.
         await new Promise((res) => setTimeout(res, 1000));
       };
-    
 }
 
 export default UserService;

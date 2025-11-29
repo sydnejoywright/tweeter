@@ -272,9 +272,7 @@ import {
         RegisterRequest,
         RegisterResponse
       >(request, "/user/register");
-  
-      // Convert the UserDto returned by ClientCommunicator to a User
-      
+        
       if(response.success && response.user){
         const user = User.fromDto(response.user)
         const authToken = new AuthToken(response.authToken, Date.now());
@@ -282,7 +280,7 @@ import {
           throw new Error("Failed to convert UserDto to User");
         }
         return [user, authToken]
-      } else {
+      }else {
         console.error(response);
         throw new Error(response.message ?? undefined);
       }

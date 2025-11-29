@@ -1,4 +1,4 @@
-import { AuthToken, Status, FakeData } from "tweeter-shared";
+import { Status, FakeData } from "tweeter-shared";
 import { Service } from "./Service";
 import { StatusDto } from "tweeter-shared/dist/model/dto/StatusDto";
 
@@ -10,7 +10,6 @@ export class StatusService implements Service{
         pageSize: number,
         lastItem: StatusDto | null
       ): Promise<[StatusDto[], boolean]> {
-        // TODO: Replace with the result of calling server
         return this.getFakeData(lastItem, pageSize, userAlias);
       };
 
@@ -26,7 +25,6 @@ export class StatusService implements Service{
         pageSize: number,
         lastItem: StatusDto | null
       ): Promise<[StatusDto[], boolean]> {
-        // TODO: Replace with the result of calling server
         return this.getFakeData(lastItem, pageSize, userAlias);
       };
 

@@ -279,12 +279,12 @@ export class Status {
     public get dto() : StatusDto {
       return{
         post: this.post,
-        user: this.user,
+        user: this.user.dto,
         timestamp: this.timestamp,
       }
     }
   
     public static fromDto(dto: StatusDto | null ): Status | null{
-      return dto == null ? null : new Status(dto.post, dto.user, dto.timestamp)
+      return dto == null ? null : new Status(dto.post, User.fromDto(dto.user)!, dto.timestamp)
     }
 }

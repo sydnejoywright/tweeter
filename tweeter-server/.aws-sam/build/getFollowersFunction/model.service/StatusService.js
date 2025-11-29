@@ -4,7 +4,6 @@ exports.StatusService = void 0;
 const tweeter_shared_1 = require("tweeter-shared");
 class StatusService {
     async loadMoreFeedItems(authToken, userAlias, pageSize, lastItem) {
-        // TODO: Replace with the result of calling server
         return this.getFakeData(lastItem, pageSize, userAlias);
     }
     ;
@@ -14,7 +13,6 @@ class StatusService {
         return [dtos, hasMore];
     }
     async loadMoreStoryItems(authToken, userAlias, pageSize, lastItem) {
-        // TODO: Replace with the result of calling server
         return this.getFakeData(lastItem, pageSize, userAlias);
     }
     ;

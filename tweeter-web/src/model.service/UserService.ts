@@ -1,5 +1,5 @@
 import { Buffer } from "buffer";
-import { AuthToken, User, FakeData, GetUserRequest } from "tweeter-shared";
+import { AuthToken, User, GetUserRequest } from "tweeter-shared";
 import { Service } from "./Service";
 import { ServerFacade } from "../network/ServerFacade";
 
@@ -15,7 +15,6 @@ export class UserService implements Service{
         token: authToken.token,
         userAlias: alias
       };
-  
       try {
         return await this.serverFacade.getUser(request);
       } catch (error) {
@@ -33,7 +32,12 @@ export class UserService implements Service{
           alias: alias,
           password: password
         }
-        return await this.serverFacade.login(request)
+        try {
+          return await this.serverFacade.login(request)
+        } catch (error) {
+          console.error("Error logging in:", error);
+          throw new Error("Login failed");
+        }
       };
 
       public async register (
@@ -57,22 +61,24 @@ export class UserService implements Service{
           imageFileExtension: imageFileExtension
         }
 
-        return await this.serverFacade.register(request)
-        // const user = FakeData.instance.firstUser;
-    
-        // if (user === null) {
-        //     throw new Error("Invalid registration");
-        // }
-    
-        // return [user, FakeData.instance.authToken];
+        try {
+          return await this.serverFacade.register(request)
+        } catch (error) {
+          console.error("Error registering:", error);
+          throw new Error("Register failed");
+        }
         };
 
       public async logout(authToken: AuthToken): Promise<void>{
-        // Pause so we can see the logging out message. Delete when the call to the server is implemented.
-        const request = {authToken: authToken}
-        return await this.serverFacade.logout(request);
-        
-        // new Promise((res) => setTimeout(res, 1000));
+        const request = {
+          authToken: authToken
+        }
+        try {
+          return await this.serverFacade.logout(request);
+        } catch (error) {
+          console.error("Error logging out:", error);
+          throw new Error("Logout failed");
+        }
       };
     
 }

@@ -1,4 +1,4 @@
-import { AuthToken, User, FakeData, PagedUserItemRequest, GetFollowCountRequest} from "tweeter-shared";
+import { AuthToken, User, PagedUserItemRequest, GetFollowCountRequest} from "tweeter-shared";
 import { Service } from "./Service";
 import { ServerFacade } from "../network/ServerFacade";
 
@@ -17,7 +17,6 @@ export class FollowService implements Service{
           pageSize: pageSize,
           lastItem: lastItem?.dto ?? null,
         };
-        // TODO: Replace with the result of calling server
         try{
           return await this.serverFacade.getMoreFollowees(request);
         } catch (error) {
@@ -38,7 +37,6 @@ export class FollowService implements Service{
           pageSize: pageSize,
           lastItem: lastItem?.dto ?? null,
         };
-        // TODO: Replace with the result of calling server
         try{
           return await this.serverFacade.getMoreFollowers(request);
         } catch (error) {
@@ -120,5 +118,4 @@ export class FollowService implements Service{
       };
 
 }
-
 export default FollowService;
