@@ -2,7 +2,6 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: SAM config for Tweeter server
 
-
 #
 # Global Lambda function properties. These apply to every Lambda function.
 #
@@ -14,7 +13,13 @@ Globals:
       - !Ref tweeterLayer
     Timeout: 30
     MemorySize: 128
-
+    Environment:
+      Variables:
+        USERS_TABLE: !Ref usersTable
+        SESSIONS_TABLE: !Ref sessionsTable
+        STATUS_TABLE: !Ref statusTable
+        FOLLOW_TABLE: !Ref followTable
+        S3_BUCKET: !Ref profilePicsBucket
 
 #
 # Reusable blocks of configuration. These are referenced throughout the template to avoid duplication.
@@ -36,13 +41,10 @@ Metadata:
     Access-Control-Allow-Origin:
       type: string
 
-
 #
 # AWS resource definitions
 #
 Resources:
-
-
   #
   # Web API
   #
@@ -100,14 +102,13 @@ Resources:
             description: "Internal Server Error"
             headers: *commonSwaggerResponseHeaders
         paths:
-
           #
           # Endpoint definitions
           #
-          
-      ###Follow##############################################################################
 
-          /user/create:  ##### TODO: Set endpoint URL
+          ###Follow##############################################################################
+
+          /user/create: ##### TODO: Set endpoint URL
             post:
               consumes: *commonConsumes
               produces: *commonProduces
@@ -212,8 +213,7 @@ Resources:
                 responses: *commonAmazonResponses
               responses: *commonSwaggerResponses
 
-
-        ###STATUS##################################################################################
+          ###STATUS##################################################################################
 
           /feed/list:
             post:
@@ -254,7 +254,7 @@ Resources:
                 responses: *commonAmazonResponses
               responses: *commonSwaggerResponses
 
-        ###USER##################################################################################
+          ###USER##################################################################################
 
           /user/get:
             post:
@@ -317,7 +317,6 @@ Resources:
   #     Properties:
   #       QueueName: MyQueue
 
-
   #
   # Lambda Layer (reused by all Lambda functions)
   #
@@ -330,7 +329,6 @@ Resources:
       CompatibleRuntimes:
         - nodejs20.x
       RetentionPolicy: DELETE
-
 
   #
   # Web API Lambda functions
@@ -356,22 +354,22 @@ Resources:
   #           Path: /user/get
   #           Method: POST
 
-  userCreateFunction:  ##### TODO: Set function name
+  userCreateFunction: ##### TODO: Set function name
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: userCreateFunction  ##### TODO: Set function name
-      Handler: handlers/users/UserCreateHandler.userCreateHandler  ##### TODO: Set Handler
+      FunctionName: userCreateFunction ##### TODO: Set function name
+      Handler: handlers/users/UserCreateHandler.userCreateHandler ##### TODO: Set Handler
       Policies: *commonPolicies
       Events:
         PostApi:
           Type: Api
           Properties:
             RestApiId: !Ref tweeterApi
-            Path: /user/create  ##### TODO: Set Path
+            Path: /user/create ##### TODO: Set Path
             Method: POST
 
   #
-      ###Follow##############################################################################
+  ###Follow##############################################################################
   getFolloweesFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -399,7 +397,6 @@ Resources:
             RestApiId: !Ref tweeterApi
             Path: /followee/count
             Method: POST
-
 
   getFollowersFunction:
     Type: AWS::Serverless::Function
@@ -468,9 +465,8 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref tweeterApi
-            Path: /follow/follow
+            Path: /follow/unfollow
             Method: POST
-
 
     ###Status##############################################################################
 
@@ -573,9 +569,6 @@ Resources:
             Path: /user/register
             Method: POST
 
-
-
-
   #
   # SQS Queue Lambda Functions  (This will become relevant in Milestone 4. For M3, leave this section commented out.)
   #
@@ -593,49 +586,26 @@ Resources:
   #             Queue: !GetAtt MyQueue.Arn
   #             Enabled: true
 
-
   #
   # DynamoDB Tables
   #
 
-  visitTable:  ##### TODO: Change "visitTable" to match the table name. This doesn't
-               #####       need to be the actual table name, just a unique identifier.
+  usersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: visit  ##### TODO: Set the actual table name. This is what your code will use to identify this table.
+      TableName: Users
       AttributeDefinitions:
-        ##### TODO: Add any attributes that will be used as partition or sort keys for the table or any indexes.
-        - AttributeName: person_name
-          AttributeType: S  ##### TODO: Set the data type for this attribute. S for string, N for number, etc.
-        - AttributeName: place_name
+        - AttributeName: alias
           AttributeType: S
       KeySchema:
-        - AttributeName: person_name  ##### TODO: Set the table partition key name
-          KeyType: HASH
-        - AttributeName: place_name  ##### TODO: Set the table sort key name. Delete these
-          KeyType: RANGE             #####       two lines if the table has no sort key.
-      BillingMode: PROVISIONED
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1   ##### TODO: Set the table's Read and Write capacities. Leaving these at
-        WriteCapacityUnits: 1  #####       one is fine for now, but you may need to change them later.
-      ##### TODO: If you don't need an index for this table, delete the GlobalSecondaryIndexes property and all its subproperties.
-      GlobalSecondaryIndexes:
-        - IndexName: place_index  ##### TODO: Set the actual index name. This is what your code will use to identify this index.
-          KeySchema:
-            - AttributeName: place_name  ##### TODO: Set the index partition key name
-              KeyType: HASH
-            - AttributeName: person_name  ##### TODO: Set the index sort key name. Delete these
-              KeyType: RANGE              #####       two lines if the index has no sort key.
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1   ##### TODO: Same thing. Indexes have their own read/write
-            WriteCapacityUnits: 1  #####       capacities that you may need to change.
-          Projection:
-            ProjectionType: ALL
+        - AttributeName: alias
+          KeyType: HASH # Partition key
+      BillingMode: PAY_PER_REQUEST
 
-  followTable:  ##### TODO: Change to match the table name
+  followTable: ##### TODO: Change to match the table name
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: follow  ##### TODO: Set the actual table name
+      TableName: follow ##### TODO: Set the actual table name
       AttributeDefinitions:
         ##### TODO: Add attributes that will be partition or sort keys, including their datatypes (for both table and index)
         - AttributeName: follower_alias
@@ -643,20 +613,20 @@ Resources:
         - AttributeName: followee_alias
           AttributeType: S
       KeySchema:
-        - AttributeName: follower_alias  ##### TODO: Set table partition key
+        - AttributeName: follower_alias ##### TODO: Set table partition key
           KeyType: HASH
-        - AttributeName: followee_alias  ##### TODO: Set table sort key
+        - AttributeName: followee_alias ##### TODO: Set table sort key
           KeyType: RANGE
       BillingMode: PROVISIONED
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
       GlobalSecondaryIndexes:
-        - IndexName: follow_index  ##### TODO: Set the actual index name
+        - IndexName: follow_index ##### TODO: Set the actual index name
           KeySchema:
-            - AttributeName: followee_alias  ##### TODO: Set index partition key
+            - AttributeName: followee_alias ##### TODO: Set index partition key
               KeyType: HASH
-            - AttributeName: follower_alias  ##### TODO: Set index sort key
+            - AttributeName: follower_alias ##### TODO: Set index sort key
               KeyType: RANGE
           ProvisionedThroughput:
             ReadCapacityUnits: 1
@@ -664,7 +634,55 @@ Resources:
           Projection:
             ProjectionType: ALL
 
-  #
-  # TODO: ADD MORE TABLE DEFINITIONS HERE
-  #
-  
+  sessionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: AuthTokens
+      AttributeDefinitions:
+        - AttributeName: token_hash
+          AttributeType: S
+        - AttributeName: user_alias
+          AttributeType: S
+      KeySchema:
+        - AttributeName: token_hash
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      TimeToLiveSpecification:
+        AttributeName: expires_at
+        Enabled: true
+      GlobalSecondaryIndexes:
+        - IndexName: user_index
+          KeySchema:
+            - AttributeName: user_alias
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  statusTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Status
+      AttributeDefinitions:
+        - AttributeName: user_alias
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: user_alias
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      # Optional: add GSI for querying by timestamp across all users (feed aggregation)
+      GlobalSecondaryIndexes:
+        - IndexName: timestamp_index
+          KeySchema:
+            - AttributeName: timestamp
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  profilePicsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-profile-pics-try1"

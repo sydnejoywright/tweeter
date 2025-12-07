@@ -1,14 +1,35 @@
-import {PagedUserItemRequest, PagedUserItemResponse} from "tweeter-shared"
-import FollowService from "../../model.service/FollowService"
+import { PagedUserItemRequest, PagedUserItemResponse } from "tweeter-shared";
+import {
+  authService,
+  followService,
+} from "../../model.service/lambda_service/LambdaService";
+import { AuthorizationError } from "../../model.service/lambda_service/AuthorizationService";
 
-export const handler = async (request: PagedUserItemRequest): Promise<PagedUserItemResponse> => {
-    const followService = new FollowService
-    const [items, hasMore] = await followService.loadMoreFollowees(request.token, request.userAlias, request.pageSize, request.lastItem)
+export const handler = async (
+  request: PagedUserItemRequest
+): Promise<PagedUserItemResponse> => {
+  try {
+    const currentUser = await authService.authenticate(request.token);
+    const [items, hasMore] = await followService.loadMoreFollowees(
+      request.userAlias,
+      request.pageSize,
+      request.lastItem
+    );
     return {
-        success: true,
-        message: null,
-        items: items,
-        hasMore: hasMore
+      success: true,
+      message: null,
+      items: items,
+      hasMore: hasMore,
+    };
+  } catch (e) {
+    if (e instanceof AuthorizationError) {
+      return {
+        success: false,
+        message: "Unauthorized",
+        items: null,
+        hasMore: false,
+      };
     }
-}
-
+    throw e;
+  }
+};

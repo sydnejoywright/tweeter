@@ -1,11 +1,26 @@
-import { PostStatusRequest, TweeterRequest, TweeterResponse } from "tweeter-shared"
-import StatusService from "../../model.service/StatusService"
-
-export const handler = async (request: PostStatusRequest): Promise<TweeterResponse> => {
-    const statusService = new StatusService
-    await statusService.postStatus(request.authToken, request.newStatus)
+import { PostStatusRequest, TweeterResponse } from "tweeter-shared";
+import {
+  authService,
+  statusService,
+} from "../../model.service/lambda_service/LambdaService";
+import { AuthorizationError } from "../../model.service/lambda_service/AuthorizationService";
+export const handler = async (
+  request: PostStatusRequest
+): Promise<TweeterResponse> => {
+  try {
+    const currentUser = await authService.authenticate(request.authToken);
+    await statusService.postStatus(request.newStatus);
     return {
-        success: true,
-        message: null,
+      success: true,
+      message: null,
+    };
+  } catch (e) {
+    if (e instanceof AuthorizationError) {
+      return {
+        success: false,
+        message: "Unauthorized",
+      };
     }
-}
+    throw e;
+  }
+};

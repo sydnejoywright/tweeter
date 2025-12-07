@@ -1,13 +1,35 @@
-import { GetIsFollowerStatusRequest, GetIsFollowerStatusResponse } from "tweeter-shared"
-import FollowService from "../../model.service/FollowService"
+import {
+  GetIsFollowerStatusRequest,
+  GetIsFollowerStatusResponse,
+} from "tweeter-shared";
+import {
+  authService,
+  followService,
+} from "../../model.service/lambda_service/LambdaService";
+import { AuthorizationError } from "../../model.service/lambda_service/AuthorizationService";
 
-export const handler = async (request: GetIsFollowerStatusRequest): Promise<GetIsFollowerStatusResponse> => {
-    console.log("Hit server side GetIsFollowerStatusLambda!");
-    const followService = new FollowService();
-    const following = await followService.getIsFollowerStatus(request.token, request.user, request.selectedUser)
+export const handler = async (
+  request: GetIsFollowerStatusRequest
+): Promise<GetIsFollowerStatusResponse> => {
+  try {
+    const currentUser = await authService.authenticate(request.token);
+    const following = await followService.getIsFollowerStatus(
+      request.user,
+      request.selectedUser
+    );
     return {
-        success: true,
-        message: null,
-        following: following
+      success: true,
+      message: null,
+      following: following,
+    };
+  } catch (e) {
+    if (e instanceof AuthorizationError) {
+      return {
+        success: false,
+        message: "Unauthorized",
+        following: false,
+      };
     }
-}
+    throw e;
+  }
+};

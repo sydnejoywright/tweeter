@@ -1,15 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handler = void 0;
-const FollowService_1 = require("../../model.service/FollowService");
+const LambdaService_1 = require("../../model.service/lambda_service/LambdaService");
+const AuthorizationService_1 = require("../../model.service/lambda_service/AuthorizationService");
 const handler = async (request) => {
-    const followService = new FollowService_1.FollowService;
-    const [followerCount, followeeCount] = await followService.unfollow(request.authToken, request.userToFollow);
-    return {
-        success: true,
-        message: null,
-        followerCount: followerCount,
-        followeeCount: followeeCount
-    };
+    try {
+        const currentUser = await LambdaService_1.authService.authenticate(request.authToken);
+        const [followerCount, followeeCount] = await LambdaService_1.followService.unfollow(currentUser, request.userToFollow);
+        return {
+            success: true,
+            message: null,
+            followerCount: followerCount,
+            followeeCount: followeeCount,
+        };
+    }
+    catch (e) {
+        if (e instanceof AuthorizationService_1.AuthorizationError) {
+            return {
+                success: false,
+                message: "Unauthorized",
+                followerCount: null,
+                followeeCount: null,
+            };
+        }
+        throw e;
+    }
 };
 exports.handler = handler;

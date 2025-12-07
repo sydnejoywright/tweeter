@@ -9,6 +9,18 @@ Globals:
     - Ref: tweeterLayer
     Timeout: 30
     MemorySize: 128
+    Environment:
+      Variables:
+        USERS_TABLE:
+          Ref: usersTable
+        SESSIONS_TABLE:
+          Ref: sessionsTable
+        STATUS_TABLE:
+          Ref: statusTable
+        FOLLOW_TABLE:
+          Ref: followTable
+        S3_BUCKET:
+          Ref: profilePicsBucket
 Metadata:
   x-common-policies:
   - AWSLambdaBasicExecutionRole
@@ -1176,7 +1188,7 @@ Resources:
           Properties:
             RestApiId:
               Ref: tweeterApi
-            Path: /follow/follow
+            Path: /follow/unfollow
             Method: POST
       CodeUri: unfollowFunction
     Metadata:
@@ -1342,36 +1354,17 @@ Resources:
       CodeUri: registerFunction
     Metadata:
       SamResourceId: registerFunction
-  visitTable:
+  usersTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: visit
+      TableName: Users
       AttributeDefinitions:
-      - AttributeName: person_name
-        AttributeType: S
-      - AttributeName: place_name
+      - AttributeName: alias
         AttributeType: S
       KeySchema:
-      - AttributeName: person_name
+      - AttributeName: alias
         KeyType: HASH
-      - AttributeName: place_name
-        KeyType: RANGE
-      BillingMode: PROVISIONED
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
-      GlobalSecondaryIndexes:
-      - IndexName: place_index
-        KeySchema:
-        - AttributeName: place_name
-          KeyType: HASH
-        - AttributeName: person_name
-          KeyType: RANGE
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        Projection:
-          ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
   followTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -1402,3 +1395,53 @@ Resources:
           WriteCapacityUnits: 1
         Projection:
           ProjectionType: ALL
+  sessionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: AuthTokens
+      AttributeDefinitions:
+      - AttributeName: token_hash
+        AttributeType: S
+      - AttributeName: user_alias
+        AttributeType: S
+      KeySchema:
+      - AttributeName: token_hash
+        KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      TimeToLiveSpecification:
+        AttributeName: expires_at
+        Enabled: true
+      GlobalSecondaryIndexes:
+      - IndexName: user_index
+        KeySchema:
+        - AttributeName: user_alias
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+  statusTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Status
+      AttributeDefinitions:
+      - AttributeName: user_alias
+        AttributeType: S
+      - AttributeName: timestamp
+        AttributeType: N
+      KeySchema:
+      - AttributeName: user_alias
+        KeyType: HASH
+      - AttributeName: timestamp
+        KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+      - IndexName: timestamp_index
+        KeySchema:
+        - AttributeName: timestamp
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+  profilePicsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: ${AWS::StackName}-profile-pics-try1

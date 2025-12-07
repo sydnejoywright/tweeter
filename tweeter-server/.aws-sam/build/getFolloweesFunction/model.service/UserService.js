@@ -1,40 +1,43 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
-const tweeter_shared_1 = require("tweeter-shared");
 class UserService {
-    async getUser(authToken, alias) {
-        return this.getFakeUser(alias);
+    userDao;
+    imageDao;
+    authDao;
+    tokenLife;
+    constructor(userDao, imageDao, authDao, tokenLife = 600) {
+        this.userDao = userDao;
+        this.imageDao = imageDao;
+        this.authDao = authDao;
+        this.tokenLife = tokenLife;
     }
-    ;
-    async getFakeUser(userAlias) {
-        const user = tweeter_shared_1.FakeData.instance.findUserByAlias(userAlias);
-        if (!user) {
-            return null;
-        }
-        return user.dto;
+    async getUser(alias) {
+        return this.userDao.getUserByAlias(alias);
     }
     async login(alias, password) {
-        const user = tweeter_shared_1.FakeData.instance.firstUser;
+        const user = await this.userDao.getUserByAlias(alias);
         if (user === null) {
             throw new Error("Invalid alias or password");
         }
-        return [user.dto, tweeter_shared_1.FakeData.instance.authToken.token];
+        const token = await this.authDao.createAuthToken(alias, this.tokenLife);
+        return [user, token];
     }
-    ;
     async register(firstName, lastName, alias, password, userImageBytes, imageFileExtension) {
-        const user = tweeter_shared_1.FakeData.instance.firstUser;
-        if (user === null) {
-            throw new Error("Invalid registration");
-        }
-        return [user.dto, tweeter_shared_1.FakeData.instance.authToken.token];
+        const imageUrl = await this.imageDao.uploadUserImage(alias, userImageBytes, imageFileExtension);
+        const user = {
+            firstName,
+            lastName,
+            alias,
+            imageUrl: imageUrl,
+        };
+        await this.userDao.createUser(user, password, userImageBytes, imageFileExtension);
+        const authToken = await this.authDao.createAuthToken(alias, this.tokenLife);
+        return [user, authToken];
     }
-    ;
     async logout(authToken) {
-        // Pause so we can see the logging out message. Delete when the call to the server is implemented.
-        await new Promise((res) => setTimeout(res, 1000));
+        await this.authDao.revokeAuthToken(authToken);
     }
-    ;
 }
 exports.UserService = UserService;
 exports.default = UserService;

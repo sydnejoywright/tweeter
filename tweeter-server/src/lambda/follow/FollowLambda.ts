@@ -1,13 +1,34 @@
-import { FollowRequest, FollowResponse } from "tweeter-shared"
-import { FollowService } from "../../model.service/FollowService"
+import { FollowRequest, FollowResponse } from "tweeter-shared";
+import {
+  followService,
+  authService,
+} from "../../model.service/lambda_service/LambdaService";
+import { AuthorizationError } from "../../model.service/lambda_service/AuthorizationService";
 
-export const handler = async (request: FollowRequest): Promise<FollowResponse> => {
-    const followService = new FollowService
-    const [followerCount, followeeCount] = await followService.follow(request.authToken, request.userToFollow)
+export const handler = async (
+  request: FollowRequest
+): Promise<FollowResponse> => {
+  try {
+    const currentUser = await authService.authenticate(request.authToken);
+    const [followerCount, followeeCount] = await followService.follow(
+      currentUser,
+      request.userToFollow
+    );
     return {
-        success: true,
-        message: null,
-        followerCount: followerCount,
-        followeeCount: followeeCount
+      success: true,
+      message: null,
+      followerCount: followerCount,
+      followeeCount: followeeCount,
+    };
+  } catch (e) {
+    if (e instanceof AuthorizationError) {
+      return {
+        success: false,
+        message: "Unauthorized",
+        followeeCount: null,
+        followerCount: null,
+      };
     }
-}
+    throw e;
+  }
+};

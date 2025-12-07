@@ -1,25 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StatusService = void 0;
-const tweeter_shared_1 = require("tweeter-shared");
 class StatusService {
-    async loadMoreFeedItems(authToken, userAlias, pageSize, lastItem) {
-        return this.getFakeData(lastItem, pageSize, userAlias);
+    userDao;
+    followDao;
+    authDao;
+    statusDao;
+    constructor(userDao, followDao, authDao, statusDao) {
+        this.userDao = userDao;
+        this.followDao = followDao;
+        this.authDao = authDao;
+        this.statusDao = statusDao;
     }
-    ;
-    async getFakeData(lastItem, pageSize, userAlias) {
-        const [items, hasMore] = tweeter_shared_1.FakeData.instance.getPageOfStatuses(tweeter_shared_1.Status.fromDto(lastItem), pageSize);
-        const dtos = items.map((status) => status.dto);
-        return [dtos, hasMore];
+    async loadMoreFeedItems(userAlias, pageSize, lastItem) {
+        //To do: verify auth token?
+        return await this.statusDao.getFeedItems(userAlias, pageSize, lastItem);
     }
-    async loadMoreStoryItems(authToken, userAlias, pageSize, lastItem) {
-        return this.getFakeData(lastItem, pageSize, userAlias);
+    async loadMoreStoryItems(userAlias, pageSize, lastItem) {
+        //verify auth token?
+        return await this.statusDao.getStoryItems(userAlias, pageSize, lastItem);
     }
-    ;
-    async postStatus(authToken, newStatus) {
-        await new Promise((f) => setTimeout(f, 2000));
+    async postStatus(newStatus) {
+        //verify auth token?
+        return await this.statusDao.postStatus(newStatus);
     }
-    ;
 }
 exports.StatusService = StatusService;
 exports.default = StatusService;
