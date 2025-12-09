@@ -12,7 +12,7 @@ export const handler = async (
   request: GetIsFollowerStatusRequest
 ): Promise<GetIsFollowerStatusResponse> => {
   try {
-    const currentUser = await authService.authenticate(request.token);
+    const currentUser = await authService.authenticate(request.authToken);
     const following = await followService.getIsFollowerStatus(
       request.user,
       request.selectedUser

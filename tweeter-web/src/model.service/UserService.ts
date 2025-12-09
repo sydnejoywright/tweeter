@@ -12,7 +12,7 @@ export class UserService implements Service {
   ): Promise<User | null> {
     console.log("UserService.getUser called with:", { authToken, alias });
     const request: GetUserRequest = {
-      token: authToken.token,
+      authToken: authToken.token,
       userAlias: alias,
     };
     try {

@@ -44,26 +44,34 @@ export class UserService implements Service {
     lastName: string,
     alias: string,
     password: string,
-    userImageBytes: Uint8Array,
-    imageFileExtension: string
+    userImageBytes?: Uint8Array | null,
+    imageFileExtension?: string | null
   ): Promise<[UserDto, string]> {
-    const imageUrl = await this.imageDao.uploadUserImage(
-      alias,
-      userImageBytes,
-      imageFileExtension
-    );
+    let imageUrl: string | null = null;
+
+    // Only upload image if provided
+    if (userImageBytes && imageFileExtension) {
+      imageUrl = await this.imageDao.uploadUserImage(
+        alias,
+        userImageBytes,
+        imageFileExtension
+      );
+    }
+
     const user: UserDto = {
       firstName,
       lastName,
       alias,
-      imageUrl: imageUrl,
+      ...(imageUrl && { imageUrl }),
     };
+
     await this.userDao.createUser(
       user,
       password,
-      userImageBytes,
-      imageFileExtension
+      userImageBytes ?? undefined,
+      imageFileExtension ?? undefined
     );
+
     const authToken = await this.authDao.createAuthToken(alias, this.tokenLife);
     return [user, authToken];
   }

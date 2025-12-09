@@ -14,7 +14,7 @@ export const handler = async (
   request: GetFollowCountRequest
 ): Promise<GetFollowCountResponse> => {
   try {
-    const currentUser = await authService.authenticate(request.token);
+    const currentUser = await authService.authenticate(request.authToken);
 
     const count = await followService.getFollowerCount(request.user);
     return {

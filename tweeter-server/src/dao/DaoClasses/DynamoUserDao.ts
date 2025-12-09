@@ -32,38 +32,43 @@ export class DynamoUserDao implements UserDao {
   async createUser(
     user: UserDto,
     password: string,
-    imageBytes: Uint8Array,
-    imageExt: string
+    imageBytes?: Uint8Array,
+    imageExt?: string
   ): Promise<void> {
     const userId = uuidv4();
     let imageUrl: string | null = null;
 
     // 1) upload image first (we need a URL to store in the user record)
-    try {
-      imageUrl = await this.imageDao.uploadUserImage(
-        userId,
-        imageBytes,
-        imageExt
-      );
-    } catch (err) {
-      // bubble up a clear error
-      throw new Error("Failed to upload user image");
+    if (imageBytes && imageExt) {
+      try {
+        imageUrl = await this.imageDao.uploadUserImage(
+          userId,
+          imageBytes,
+          imageExt
+        );
+      } catch (err) {
+        // bubble up a clear error
+        throw new Error("Failed to upload user image");
+      }
     }
 
     // 2) hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // 3) build item — use clear names
-    const item = {
+    const item: any = {
       userId,
       alias: user.alias,
       firstName: user.firstName,
       lastName: user.lastName,
       passwordHash: hashedPassword,
-      imageUrl, // store the full URL
-      imageFileExtension: imageExt,
       createdAt: new Date().toISOString(),
     };
+
+    if (imageBytes && imageExt && imageUrl) {
+      item.imageUrl = imageUrl;
+      item.imageFileExtension = imageExt;
+    }
 
     // 4) attempt to write with conditional to ensure alias uniqueness
     try {
@@ -77,7 +82,7 @@ export class DynamoUserDao implements UserDao {
     } catch (err) {
       // DB write failed — attempt to delete uploaded image (best-effort cleanup)
       try {
-        if (imageUrl) {
+        if (imageUrl && imageExt) {
           await this.imageDao.deleteUserImage(userId, imageExt);
         }
       } catch (_) {}

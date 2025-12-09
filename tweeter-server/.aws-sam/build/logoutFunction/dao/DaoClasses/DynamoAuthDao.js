@@ -42,9 +42,6 @@ class DynamoAuthDao {
         }));
         return token;
     }
-    /**
-     * Validate raw token; returns userAlias if valid, otherwise null.
-     */
     async validateAuthToken(token) {
         const tokenHash = this.hashToken(token);
         const r = await this.ddb.send(new lib_dynamodb_1.GetCommand({
@@ -55,11 +52,17 @@ class DynamoAuthDao {
             return null;
         if (r.Item.revoked)
             return null;
-        // DynamoDB TTL is eventually consistent (item may remain briefly after expiry).
-        // Double-check expires_at to ensure immediate invalidation.
         const now = Math.floor(Date.now() / 1000);
         if (r.Item.expires_at && r.Item.expires_at < now)
             return null;
+        // --- Sliding expiration: extend TTL on activity ---
+        const newTTLSeconds = 3600; // 1 hour from now
+        await this.ddb.send(new lib_dynamodb_1.UpdateCommand({
+            TableName: this.tableName,
+            Key: { token_hash: tokenHash },
+            UpdateExpression: "SET expires_at = :e",
+            ExpressionAttributeValues: { ":e": now + newTTLSeconds },
+        }));
         return r.Item.user_alias;
     }
     async revokeAuthToken(token) {

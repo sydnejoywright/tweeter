@@ -6,7 +6,8 @@ const AuthorizationService_1 = require("../../model.service/lambda_service/Autho
 const handler = async (request) => {
     try {
         const currentUser = await LambdaService_1.authService.authenticate(request.authToken);
-        const [followerCount, followeeCount] = await LambdaService_1.followService.follow(currentUser, request.userToFollow);
+        const followee = request.userToFollow;
+        const [followerCount, followeeCount] = await LambdaService_1.followService.follow(currentUser, followee);
         return {
             success: true,
             message: null,

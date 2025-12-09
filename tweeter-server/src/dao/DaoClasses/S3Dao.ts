@@ -27,7 +27,8 @@ export class S3Dao implements UserImageDao {
         Body: imageBytes,
       })
     );
-    return key;
+
+    return `https://${this.bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
   }
 
   async deleteUserImage(userId: string, extension: string): Promise<void> {

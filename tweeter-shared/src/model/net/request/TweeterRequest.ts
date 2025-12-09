@@ -1,4 +1,1 @@
-export interface TweeterRequest{
-
-    
-}
+export interface TweeterRequest {}

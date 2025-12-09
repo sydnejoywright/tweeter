@@ -10,9 +10,10 @@ export const handler = async (
 ): Promise<FollowResponse> => {
   try {
     const currentUser = await authService.authenticate(request.authToken);
+    const follower = request.userToFollow;
     const [followerCount, followeeCount] = await followService.unfollow(
       currentUser,
-      request.userToFollow
+      follower
     );
     return {
       success: true,

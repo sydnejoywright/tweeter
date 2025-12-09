@@ -9,7 +9,7 @@ export const handler = async (
   request: PagedUserItemRequest
 ): Promise<PagedUserItemResponse> => {
   try {
-    const currentUser = await authService.authenticate(request.token);
+    const currentUser = await authService.authenticate(request.authToken);
 
     const [items, hasMore] = await followService.loadMoreFollowers(
       request.userAlias,

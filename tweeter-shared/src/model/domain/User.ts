@@ -59,39 +59,42 @@ export class User {
   }
 
   public static fromJson(json: string | null | undefined): User | null {
-    if (!!json) {
-      const jsonObject: {
-        _firstName: string;
-        _lastName: string;
-        _alias: string;
-        _imageUrl: string;
-      } = JSON.parse(json);
-      return new User(
-        jsonObject._firstName,
-        jsonObject._lastName,
-        jsonObject._alias,
-        jsonObject._imageUrl
-      );
-    } else {
-      return null;
-    }
+    if (!json) return null;
+
+    const obj: {
+      firstName: string;
+      lastName: string;
+      alias: string;
+      imageUrl: string;
+    } = JSON.parse(json);
+
+    return new User(obj.firstName, obj.lastName, obj.alias, obj.imageUrl);
   }
 
   public toJson(): string {
     return JSON.stringify(this);
   }
 
-  public get dto() : UserDto {
-    return{
+  public get dto(): UserDto {
+    // Hardcoded S3 bucket and region
+    const bucket = "tweeter-server-profile-pics-try1";
+    const region = "us-east-1";
+
+    const fullImageUrl =
+      this.imageUrl && !this.imageUrl.startsWith("http")
+        ? `https://${bucket}.s3.${region}.amazonaws.com/${this.imageUrl}`
+        : this.imageUrl;
+
+    return {
       firstName: this.firstName,
       lastName: this.lastName,
       alias: this.alias,
-      imageUrl: this.imageUrl
-    }
+      imageUrl: fullImageUrl,
+    };
   }
 
-  public static fromDto(dto: UserDto | null ): User | null{
-    return dto == null ? null : new User(dto.firstName, dto.lastName, dto.alias, dto.imageUrl)
+  public static fromDto(dto: UserDto | null): User | null {
+    if (!dto) return null;
+    return new User(dto.firstName, dto.lastName, dto.alias, dto.imageUrl ?? "");
   }
-
 }

@@ -17,7 +17,8 @@ Globals:
       Variables:
         USERS_TABLE: !Ref usersTable
         SESSIONS_TABLE: !Ref sessionsTable
-        STATUS_TABLE: !Ref statusTable
+        STORY_TABLE: !Ref storyTable
+        FEED_TABLE: !Ref feedTable
         FOLLOW_TABLE: !Ref followTable
         S3_BUCKET: !Ref profilePicsBucket
 
@@ -658,10 +659,10 @@ Resources:
           Projection:
             ProjectionType: ALL
 
-  statusTable:
+  storyTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: Status
+      TableName: Story
       AttributeDefinitions:
         - AttributeName: user_alias
           AttributeType: S
@@ -673,12 +674,31 @@ Resources:
         - AttributeName: timestamp
           KeyType: RANGE
       BillingMode: PAY_PER_REQUEST
-      # Optional: add GSI for querying by timestamp across all users (feed aggregation)
+
+  feedTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Feed
+      AttributeDefinitions:
+        - AttributeName: user_alias
+          AttributeType: S # The user who will see this feed
+        - AttributeName: timestamp
+          AttributeType: N # Timestamp of the post
+        - AttributeName: post_author
+          AttributeType: S # The original author of the post
+      KeySchema:
+        - AttributeName: user_alias
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
       GlobalSecondaryIndexes:
-        - IndexName: timestamp_index
+        - IndexName: author_index
           KeySchema:
-            - AttributeName: timestamp
+            - AttributeName: post_author
               KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
           Projection:
             ProjectionType: ALL
 

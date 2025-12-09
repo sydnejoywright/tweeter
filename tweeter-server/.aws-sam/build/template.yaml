@@ -15,8 +15,10 @@ Globals:
           Ref: usersTable
         SESSIONS_TABLE:
           Ref: sessionsTable
-        STATUS_TABLE:
-          Ref: statusTable
+        STORY_TABLE:
+          Ref: storyTable
+        FEED_TABLE:
+          Ref: feedTable
         FOLLOW_TABLE:
           Ref: followTable
         S3_BUCKET:
@@ -1418,10 +1420,10 @@ Resources:
           KeyType: HASH
         Projection:
           ProjectionType: ALL
-  statusTable:
+  storyTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: Status
+      TableName: Story
       AttributeDefinitions:
       - AttributeName: user_alias
         AttributeType: S
@@ -1433,11 +1435,30 @@ Resources:
       - AttributeName: timestamp
         KeyType: RANGE
       BillingMode: PAY_PER_REQUEST
+  feedTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Feed
+      AttributeDefinitions:
+      - AttributeName: user_alias
+        AttributeType: S
+      - AttributeName: timestamp
+        AttributeType: N
+      - AttributeName: post_author
+        AttributeType: S
+      KeySchema:
+      - AttributeName: user_alias
+        KeyType: HASH
+      - AttributeName: timestamp
+        KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
       GlobalSecondaryIndexes:
-      - IndexName: timestamp_index
+      - IndexName: author_index
         KeySchema:
-        - AttributeName: timestamp
+        - AttributeName: post_author
           KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
         Projection:
           ProjectionType: ALL
   profilePicsBucket:

@@ -5,8 +5,8 @@ const LambdaService_1 = require("../../model.service/lambda_service/LambdaServic
 const AuthorizationService_1 = require("../../model.service/lambda_service/AuthorizationService");
 const handler = async (request) => {
     try {
-        const currentUser = await LambdaService_1.authService.authenticate(request.token);
-        const count = await LambdaService_1.followService.getFolloweeCount(request.user);
+        const currentUser = await LambdaService_1.authService.authenticate(request.authToken);
+        const count = await LambdaService_1.followService.getFolloweeCount(currentUser);
         return {
             success: true,
             message: null,

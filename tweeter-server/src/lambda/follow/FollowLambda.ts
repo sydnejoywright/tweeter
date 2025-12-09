@@ -1,4 +1,4 @@
-import { FollowRequest, FollowResponse } from "tweeter-shared";
+import { FollowRequest, FollowResponse, UserDto } from "tweeter-shared";
 import {
   followService,
   authService,
@@ -10,9 +10,11 @@ export const handler = async (
 ): Promise<FollowResponse> => {
   try {
     const currentUser = await authService.authenticate(request.authToken);
+    const followee = request.userToFollow;
+
     const [followerCount, followeeCount] = await followService.follow(
       currentUser,
-      request.userToFollow
+      followee
     );
     return {
       success: true,

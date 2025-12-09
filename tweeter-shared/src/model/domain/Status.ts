@@ -245,46 +245,47 @@ export class Status {
   }
 
   public static fromJson(json: string | null | undefined): Status | null {
-    if (!!json) {
-      const jsonObject: {
-        _post: string;
-        _user: {
-          _firstName: string;
-          _lastName: string;
-          _alias: string;
-          _imageUrl: string;
-        };
-        _timestamp: number;
-        _segments: PostSegment[];
-      } = JSON.parse(json);
-      return new Status(
-        jsonObject._post,
-        new User(
-          jsonObject._user._firstName,
-          jsonObject._user._lastName,
-          jsonObject._user._alias,
-          jsonObject._user._imageUrl
-        ),
-        jsonObject._timestamp
-      );
-    } else {
-      return null;
-    }
+    if (!json) return null;
+
+    const obj: {
+      post: string;
+      user: {
+        firstName: string;
+        lastName: string;
+        alias: string;
+        imageUrl: string;
+      };
+      timestamp: number;
+      segments?: PostSegment[];
+    } = JSON.parse(json);
+
+    return new Status(
+      obj.post,
+      new User(
+        obj.user.firstName,
+        obj.user.lastName,
+        obj.user.alias,
+        obj.user.imageUrl
+      ),
+      obj.timestamp
+    );
   }
 
   public toJson(): string {
     return JSON.stringify(this);
   }
 
-    public get dto() : StatusDto {
-      return{
-        post: this.post,
-        user: this.user.dto,
-        timestamp: this.timestamp,
-      }
-    }
-  
-    public static fromDto(dto: StatusDto | null ): Status | null{
-      return dto == null ? null : new Status(dto.post, User.fromDto(dto.user)!, dto.timestamp)
-    }
+  public get dto(): StatusDto {
+    return {
+      post: this.post,
+      user: this.user.dto,
+      timestamp: this.timestamp,
+    };
+  }
+
+  public static fromDto(dto: StatusDto | null): Status | null {
+    return dto == null
+      ? null
+      : new Status(dto.post, User.fromDto(dto.user)!, dto.timestamp);
+  }
 }

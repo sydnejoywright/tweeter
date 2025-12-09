@@ -24,14 +24,18 @@ class UserService {
         return [user, token];
     }
     async register(firstName, lastName, alias, password, userImageBytes, imageFileExtension) {
-        const imageUrl = await this.imageDao.uploadUserImage(alias, userImageBytes, imageFileExtension);
+        let imageUrl = null;
+        // Only upload image if provided
+        if (userImageBytes && imageFileExtension) {
+            imageUrl = await this.imageDao.uploadUserImage(alias, userImageBytes, imageFileExtension);
+        }
         const user = {
             firstName,
             lastName,
             alias,
-            imageUrl: imageUrl,
+            ...(imageUrl && { imageUrl }),
         };
-        await this.userDao.createUser(user, password, userImageBytes, imageFileExtension);
+        await this.userDao.createUser(user, password, userImageBytes ?? undefined, imageFileExtension ?? undefined);
         const authToken = await this.authDao.createAuthToken(alias, this.tokenLife);
         return [user, authToken];
     }

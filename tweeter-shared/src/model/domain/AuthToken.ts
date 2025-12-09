@@ -50,16 +50,16 @@ export class AuthToken {
   }
 
   public static fromJson(json: string | null | undefined): AuthToken | null {
-    if (!!json) {
-      const jsonObject: { _token: string; _timestamp: number } =
-        JSON.parse(json);
-      return new AuthToken(jsonObject._token, jsonObject._timestamp);
-    } else {
-      return null;
-    }
+    if (!json) return null;
+
+    const obj: { token: string; timestamp: number } = JSON.parse(json);
+    return new AuthToken(obj.token, obj.timestamp);
   }
 
   public toJson(): string {
-    return JSON.stringify(this);
+    return JSON.stringify({
+      token: this._token,
+      timestamp: this._timestamp,
+    });
   }
 }

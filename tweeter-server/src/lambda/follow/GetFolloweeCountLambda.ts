@@ -9,8 +9,8 @@ export const handler = async (
   request: GetFollowCountRequest
 ): Promise<GetFollowCountResponse> => {
   try {
-    const currentUser = await authService.authenticate(request.token);
-    const count = await followService.getFolloweeCount(request.user);
+    const currentUser = await authService.authenticate(request.authToken);
+    const count = await followService.getFolloweeCount(currentUser);
     return {
       success: true,
       message: null,

@@ -10,8 +10,8 @@ import { useUserInfoActionsHooks } from "../../userInfo/UserInfoHooks";
 import { RegisterPresenter } from "../../../presenter/RegisterPresenter";
 import { AuthMessages } from "../../../presenter/AuthPresenter";
 
-interface Props{
-    presenterFactory: (view: AuthMessages) => RegisterPresenter
+interface Props {
+  presenterFactory: (view: AuthMessages) => RegisterPresenter;
 }
 
 const Register = (props: Props) => {
@@ -37,10 +37,10 @@ const Register = (props: Props) => {
     },
     navigateTo: navigate,
     rememberMe: rememberMe,
-  }
+  };
 
-  const presenterRef = useRef<RegisterPresenter | null>(null)
-  if(!presenterRef.current){
+  const presenterRef = useRef<RegisterPresenter | null>(null);
+  if (!presenterRef.current) {
     presenterRef.current = props.presenterFactory(listener);
   }
 
@@ -103,8 +103,15 @@ const Register = (props: Props) => {
   };
 
   const doRegister = async () => {
-    await presenterRef.current!.doRegister(firstName,lastName,alias,password,imageBytes,imageFileExtension);
-  }
+    await presenterRef.current!.doRegister(
+      firstName,
+      lastName,
+      alias,
+      password,
+      imageBytes,
+      imageFileExtension
+    );
+  };
 
   const inputFieldFactory = () => {
     return (
@@ -133,9 +140,10 @@ const Register = (props: Props) => {
           />
           <label htmlFor="lastNameInput">Last Name</label>
         </div>
-        <AuthenticationFields onKeyDown={registerOnEnter}
-                              onAliasChange={setAlias}      
-                              onPasswordChange={setPassword}    
+        <AuthenticationFields
+          onKeyDown={registerOnEnter}
+          onAliasChange={setAlias}
+          onPasswordChange={setPassword}
         />
         <div className="form-floating mb-3">
           <input

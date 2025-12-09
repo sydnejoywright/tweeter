@@ -29,12 +29,14 @@ class DynamoUserDao {
         const userId = (0, uuid_1.v4)();
         let imageUrl = null;
         // 1) upload image first (we need a URL to store in the user record)
-        try {
-            imageUrl = await this.imageDao.uploadUserImage(userId, imageBytes, imageExt);
-        }
-        catch (err) {
-            // bubble up a clear error
-            throw new Error("Failed to upload user image");
+        if (imageBytes && imageExt) {
+            try {
+                imageUrl = await this.imageDao.uploadUserImage(userId, imageBytes, imageExt);
+            }
+            catch (err) {
+                // bubble up a clear error
+                throw new Error("Failed to upload user image");
+            }
         }
         // 2) hash password
         const hashedPassword = await bcryptjs_1.default.hash(password, 10);
@@ -45,10 +47,12 @@ class DynamoUserDao {
             firstName: user.firstName,
             lastName: user.lastName,
             passwordHash: hashedPassword,
-            imageUrl, // store the full URL
-            imageFileExtension: imageExt,
             createdAt: new Date().toISOString(),
         };
+        if (imageBytes && imageExt && imageUrl) {
+            item.imageUrl = imageUrl;
+            item.imageFileExtension = imageExt;
+        }
         // 4) attempt to write with conditional to ensure alias uniqueness
         try {
             await this.ddb.send(new lib_dynamodb_1.PutCommand({
@@ -60,7 +64,7 @@ class DynamoUserDao {
         catch (err) {
             // DB write failed — attempt to delete uploaded image (best-effort cleanup)
             try {
-                if (imageUrl) {
+                if (imageUrl && imageExt) {
                     await this.imageDao.deleteUserImage(userId, imageExt);
                 }
             }

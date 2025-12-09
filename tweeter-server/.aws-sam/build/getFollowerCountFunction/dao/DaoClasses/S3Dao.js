@@ -16,7 +16,7 @@ class S3Dao {
             Key: key,
             Body: imageBytes,
         }));
-        return key;
+        return `https://${this.bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
     }
     async deleteUserImage(userId, extension) {
         const key = `users/${userId}.${extension}`;
