@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DynamoStatusDao = void 0;
 const client_dynamodb_1 = require("@aws-sdk/client-dynamodb");
 const lib_dynamodb_1 = require("@aws-sdk/lib-dynamodb");
-const tweeter_shared_1 = require("tweeter-shared");
 const FEED_TABLE = process.env.FEED_TABLE ?? "";
 const STORY_TABLE = process.env.STORY_TABLE ?? "";
 if (!FEED_TABLE || !STORY_TABLE) {
@@ -21,6 +20,9 @@ class DynamoStatusDao {
         this.storyTable = storyTable;
         this.followDao = followDao;
     }
+    async getFeedItems(userAlias, pageSize, lastItem) {
+        return this.queryTable(this.feedTable, userAlias, pageSize, lastItem);
+    }
     async queryTable(tableName, userAlias, pageSize, lastItem) {
         const params = {
             TableName: tableName,
@@ -29,7 +31,7 @@ class DynamoStatusDao {
                 ":userAlias": userAlias,
             },
             Limit: pageSize,
-            ScanIndexForward: false,
+            ScanIndexForward: false, // newest first
         };
         if (lastItem) {
             params.ExclusiveStartKey = {
@@ -38,41 +40,50 @@ class DynamoStatusDao {
             };
         }
         const result = await this.ddb.send(new lib_dynamodb_1.QueryCommand(params));
+        // Map each item to StatusDto, using the 'author' object for user info
         const items = (result.Items ?? []).map((i) => ({
-            user: new tweeter_shared_1.User(i.firstName ?? "", i.lastName ?? "", i.user_alias ?? "", i.imageUrl ?? "").dto,
+            user: {
+                firstName: i.author?.firstName ?? "",
+                lastName: i.author?.lastName ?? "",
+                alias: i.author?.alias ?? i.post_author ?? "",
+                imageUrl: i.author?.imageUrl ?? "",
+            },
             post: i.message ?? "",
             timestamp: i.timestamp ?? 0,
         }));
         const hasMore = !!result.LastEvaluatedKey;
         return [items, hasMore];
     }
-    async getFeedItems(userAlias, pageSize, lastItem) {
-        return this.queryTable(this.feedTable, userAlias, pageSize, lastItem);
-    }
     async getStoryItems(userAlias, pageSize, lastItem) {
         return this.queryTable(this.storyTable, userAlias, pageSize, lastItem);
     }
     async postStatus(newStatus) {
         console.log("Posting new status:", JSON.stringify(newStatus));
-        const item = {
+        const storyItem = {
             user_alias: newStatus.user.alias,
             timestamp: newStatus.timestamp,
+            post_author: newStatus.user.alias,
             author: newStatus.user,
             message: newStatus.post,
             firstName: newStatus.user.firstName,
             lastName: newStatus.user.lastName,
             imageUrl: newStatus.user.imageUrl ?? "",
         };
-        await this.ddb.send(new lib_dynamodb_1.PutCommand({ TableName: this.storyTable, Item: item }));
+        await this.ddb.send(new lib_dynamodb_1.PutCommand({ TableName: this.storyTable, Item: storyItem }));
         const [followers, hasMore] = await this.followDao.getFollowerItems(newStatus.user.alias, 1000, null);
         const allRecipients = [
             { alias: newStatus.user.alias },
             ...followers.map((f) => ({ alias: f.alias })),
         ];
-        console.log("ALL RECIPIENTS: ", allRecipients);
+        console.log("ALL FEED RECIPIENTS:", allRecipients);
         for (const recipient of allRecipients) {
-            await this.ddb.send(new lib_dynamodb_1.PutCommand({ TableName: this.feedTable, Item: item }));
+            const feedItem = {
+                ...storyItem,
+                user_alias: recipient.alias,
+            };
+            await this.ddb.send(new lib_dynamodb_1.PutCommand({ TableName: this.feedTable, Item: feedItem }));
         }
+        console.log("Status successfully posted to story and feeds.");
     }
 }
 exports.DynamoStatusDao = DynamoStatusDao;

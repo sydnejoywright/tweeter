@@ -29,7 +29,6 @@ export class StatusService implements Service {
     pageSize: number,
     lastItem: StatusDto | null
   ): Promise<[StatusDto[], boolean]> {
-    //To do: verify auth token?
     return await this.statusDao.getFeedItems(userAlias, pageSize, lastItem);
   }
 

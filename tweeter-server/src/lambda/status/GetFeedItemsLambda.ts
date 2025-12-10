@@ -12,17 +12,12 @@ export const handler = async (
   request: GetFeedItemsRequest
 ): Promise<GetFeedItemsResponse> => {
   try {
-    // Authenticate the user
     const currentUser = await authService.authenticate(request.authToken);
-
-    // Fetch feed items from the service
     const [items, hasMore] = await statusService.loadMoreFeedItems(
       request.userAlias,
       request.pageSize,
       request.lastItem
     );
-
-    // If no items returned, set as empty array
     if (!items) {
       return {
         success: true,
@@ -31,15 +26,13 @@ export const handler = async (
         hasMore: false,
       };
     }
-
-    // Transform items: ensure user.imageUrl is full URL or empty
     const transformedItems = items.map((status) => {
       const user = status.user;
 
       const imageUrl =
         user.imageUrl && !user.imageUrl.startsWith("http")
           ? `https://${BUCKET}.s3.${REGION}.amazonaws.com/${user.imageUrl}`
-          : user.imageUrl; // leave empty if no image
+          : user.imageUrl;
 
       return {
         post: status.post,
@@ -52,8 +45,6 @@ export const handler = async (
         },
       };
     });
-
-    // Return the transformed feed items
     return {
       success: true,
       message: null,

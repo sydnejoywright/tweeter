@@ -19,7 +19,7 @@ const imageDao = new S3Dao(S3_BUCKET);
 const userDao = new DynamoUserDao(USERS_TABLE, imageDao);
 const authDao = new DynamoAuthDao(SESSIONS_TABLE);
 const followDao = new DynamoFollowDao(FOLLOW_TABLE);
-const statusDao = new DynamoStatusDao(followDao, STORY_TABLE, FEED_TABLE);
+const statusDao = new DynamoStatusDao(followDao, FEED_TABLE, STORY_TABLE);
 
 export const userService = new UserService(userDao, imageDao, authDao);
 export const followService = new FollowService(userDao, followDao);

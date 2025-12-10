@@ -13,7 +13,6 @@ class StatusService {
         this.statusDao = statusDao;
     }
     async loadMoreFeedItems(userAlias, pageSize, lastItem) {
-        //To do: verify auth token?
         return await this.statusDao.getFeedItems(userAlias, pageSize, lastItem);
     }
     async loadMoreStoryItems(userAlias, pageSize, lastItem) {

@@ -36,6 +36,14 @@ export class DynamoStatusDao implements StatusDao {
     this.followDao = followDao;
   }
 
+  public async getFeedItems(
+    userAlias: string,
+    pageSize: number,
+    lastItem: StatusDto | null
+  ): Promise<[StatusDto[], boolean]> {
+    return this.queryTable(this.feedTable, userAlias, pageSize, lastItem);
+  }
+
   private async queryTable(
     tableName: string,
     userAlias: string,
@@ -49,7 +57,7 @@ export class DynamoStatusDao implements StatusDao {
         ":userAlias": userAlias,
       },
       Limit: pageSize,
-      ScanIndexForward: false,
+      ScanIndexForward: false, // newest first
     };
 
     if (lastItem) {
@@ -61,27 +69,20 @@ export class DynamoStatusDao implements StatusDao {
 
     const result = await this.ddb.send(new QueryCommand(params));
 
-    const items: StatusDto[] = (result.Items ?? []).map((i) => ({
-      user: new User(
-        i.firstName ?? "",
-        i.lastName ?? "",
-        i.user_alias ?? "",
-        i.imageUrl ?? ""
-      ).dto,
+    // Map each item to StatusDto, using the 'author' object for user info
+    const items: StatusDto[] = (result.Items ?? []).map((i: any) => ({
+      user: {
+        firstName: i.author?.firstName ?? "",
+        lastName: i.author?.lastName ?? "",
+        alias: i.author?.alias ?? i.post_author ?? "",
+        imageUrl: i.author?.imageUrl ?? "",
+      },
       post: i.message ?? "",
       timestamp: i.timestamp ?? 0,
     }));
 
     const hasMore = !!result.LastEvaluatedKey;
     return [items, hasMore];
-  }
-
-  public async getFeedItems(
-    userAlias: string,
-    pageSize: number,
-    lastItem: StatusDto | null
-  ): Promise<[StatusDto[], boolean]> {
-    return this.queryTable(this.feedTable, userAlias, pageSize, lastItem);
   }
 
   public async getStoryItems(
@@ -95,9 +96,10 @@ export class DynamoStatusDao implements StatusDao {
   public async postStatus(newStatus: StatusDto): Promise<void> {
     console.log("Posting new status:", JSON.stringify(newStatus));
 
-    const item = {
+    const storyItem = {
       user_alias: newStatus.user.alias,
       timestamp: newStatus.timestamp,
+      post_author: newStatus.user.alias,
       author: newStatus.user,
       message: newStatus.post,
       firstName: newStatus.user.firstName,
@@ -106,7 +108,7 @@ export class DynamoStatusDao implements StatusDao {
     };
 
     await this.ddb.send(
-      new PutCommand({ TableName: this.storyTable, Item: item })
+      new PutCommand({ TableName: this.storyTable, Item: storyItem })
     );
 
     const [followers, hasMore] = await this.followDao.getFollowerItems(
@@ -120,12 +122,19 @@ export class DynamoStatusDao implements StatusDao {
       ...followers.map((f) => ({ alias: f.alias })),
     ];
 
-    console.log("ALL RECIPIENTS: ", allRecipients);
+    console.log("ALL FEED RECIPIENTS:", allRecipients);
 
     for (const recipient of allRecipients) {
+      const feedItem = {
+        ...storyItem,
+        user_alias: recipient.alias,
+      };
+
       await this.ddb.send(
-        new PutCommand({ TableName: this.feedTable, Item: item })
+        new PutCommand({ TableName: this.feedTable, Item: feedItem })
       );
     }
+
+    console.log("Status successfully posted to story and feeds.");
   }
 }
