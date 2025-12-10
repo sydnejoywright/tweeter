@@ -9,8 +9,7 @@ export const handler = async (
 ): Promise<TweeterResponse> => {
   try {
     const currentUser = await authService.authenticate(request.authToken);
-    console.log("AAGGHGHH:", currentUser.imageUrl);
-    const statusToPost = { ...request.newStatus, user: currentUser };
+    const statusToPost = { ...request.newStatus };
     await statusService.postStatus(statusToPost);
     return {
       success: true,

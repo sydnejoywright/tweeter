@@ -93,9 +93,12 @@ export class DynamoStatusDao implements StatusDao {
   }
 
   public async postStatus(newStatus: StatusDto): Promise<void> {
+    console.log("Posting new status:", JSON.stringify(newStatus));
+
     const item = {
       user_alias: newStatus.user.alias,
       timestamp: newStatus.timestamp,
+      author: newStatus.user,
       message: newStatus.post,
       firstName: newStatus.user.firstName,
       lastName: newStatus.user.lastName,
@@ -112,12 +115,16 @@ export class DynamoStatusDao implements StatusDao {
       null
     );
 
-    const allRecipients = [{ alias: newStatus.user.alias }, ...followers];
+    const allRecipients = [
+      { alias: newStatus.user.alias },
+      ...followers.map((f) => ({ alias: f.alias })),
+    ];
+
+    console.log("ALL RECIPIENTS: ", allRecipients);
 
     for (const recipient of allRecipients) {
-      const feedItem = { ...item, user_alias: recipient.alias };
       await this.ddb.send(
-        new PutCommand({ TableName: this.feedTable, Item: feedItem })
+        new PutCommand({ TableName: this.feedTable, Item: item })
       );
     }
   }

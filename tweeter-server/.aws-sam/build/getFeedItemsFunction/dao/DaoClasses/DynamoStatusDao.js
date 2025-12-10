@@ -53,9 +53,11 @@ class DynamoStatusDao {
         return this.queryTable(this.storyTable, userAlias, pageSize, lastItem);
     }
     async postStatus(newStatus) {
+        console.log("Posting new status:", JSON.stringify(newStatus));
         const item = {
             user_alias: newStatus.user.alias,
             timestamp: newStatus.timestamp,
+            author: newStatus.user,
             message: newStatus.post,
             firstName: newStatus.user.firstName,
             lastName: newStatus.user.lastName,
@@ -63,10 +65,13 @@ class DynamoStatusDao {
         };
         await this.ddb.send(new lib_dynamodb_1.PutCommand({ TableName: this.storyTable, Item: item }));
         const [followers, hasMore] = await this.followDao.getFollowerItems(newStatus.user.alias, 1000, null);
-        const allRecipients = [{ alias: newStatus.user.alias }, ...followers];
+        const allRecipients = [
+            { alias: newStatus.user.alias },
+            ...followers.map((f) => ({ alias: f.alias })),
+        ];
+        console.log("ALL RECIPIENTS: ", allRecipients);
         for (const recipient of allRecipients) {
-            const feedItem = { ...item, user_alias: recipient.alias };
-            await this.ddb.send(new lib_dynamodb_1.PutCommand({ TableName: this.feedTable, Item: feedItem }));
+            await this.ddb.send(new lib_dynamodb_1.PutCommand({ TableName: this.feedTable, Item: item }));
         }
     }
 }

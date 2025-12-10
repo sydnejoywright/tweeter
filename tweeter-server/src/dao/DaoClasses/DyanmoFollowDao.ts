@@ -1,27 +1,81 @@
-import {
-  DynamoDBClient,
-  PutItemCommandInput,
-  UpdateItemCommandInput,
-} from "@aws-sdk/client-dynamodb";
+// DynamoFollowDao.ts
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
   QueryCommand,
   PutCommand,
-  UpdateCommand,
   DeleteCommand,
   GetCommand,
+  BatchGetCommand,
+  QueryCommandInput,
+  BatchGetCommandInput,
 } from "@aws-sdk/lib-dynamodb";
 import { FollowDao } from "../DaoInterfaces/FollowDao";
 import { UserDto } from "tweeter-shared";
 
 export class DynamoFollowDao implements FollowDao {
-  private ddb: DynamoDBDocumentClient;
-  private tableName: string;
+  private readonly ddb: DynamoDBDocumentClient;
+  private readonly tableName: string; // follow table (holds follower_alias, followee_alias)
+  private readonly usersTable: string; // users table (holds full user rows)
 
-  constructor(tableName: string) {
+  /**
+   * @param tableName - follow table name (required)
+   * @param usersTable - users table name (optional; will fall back to process.env.USERS_TABLE)
+   */
+  constructor(tableName: string, usersTable?: string) {
     const client = new DynamoDBClient({});
     this.ddb = DynamoDBDocumentClient.from(client);
     this.tableName = tableName;
+    this.usersTable = usersTable ?? process.env.USERS_TABLE ?? "";
+    if (!this.tableName) {
+      throw new Error("Follow table name must be provided");
+    }
+    if (!this.usersTable) {
+      throw new Error(
+        "Users table name not provided and USERS_TABLE env var is not set"
+      );
+    }
+  }
+
+  private async batchGetUsersByAliases(aliases: string[]): Promise<UserDto[]> {
+    if (!aliases || aliases.length === 0) return [];
+
+    const CHUNK_SIZE = 25;
+    const chunks: string[][] = [];
+    for (let i = 0; i < aliases.length; i += CHUNK_SIZE) {
+      chunks.push(aliases.slice(i, i + CHUNK_SIZE));
+    }
+
+    const fetchedUsers: any[] = [];
+
+    for (const chunk of chunks) {
+      const keys = chunk.map((a) => ({ alias: a }));
+      const batchParams: BatchGetCommandInput = {
+        RequestItems: {
+          [this.usersTable]: {
+            Keys: keys,
+            ProjectionExpression: "alias, firstName, lastName, imageUrl",
+          },
+        },
+      };
+
+      const batchRes = await this.ddb.send(new BatchGetCommand(batchParams));
+      const responses = batchRes.Responses?.[this.usersTable] ?? [];
+      fetchedUsers.push(...responses);
+    }
+
+    const byAlias = new Map<string, UserDto>();
+    for (const u of fetchedUsers) {
+      if (!u?.alias) continue;
+      byAlias.set(u.alias, {
+        firstName: u.firstName ?? "",
+        lastName: u.lastName ?? "",
+        alias: u.alias,
+        imageUrl: u.imageUrl ?? "",
+      });
+    }
+
+    return aliases.map((a) => byAlias.get(a)).filter((u): u is UserDto => !!u);
   }
 
   public async getFolloweeItems(
@@ -29,12 +83,10 @@ export class DynamoFollowDao implements FollowDao {
     pageSize: number,
     lastItem: UserDto | null
   ): Promise<[UserDto[], boolean]> {
-    const params: any = {
+    const params: QueryCommandInput = {
       TableName: this.tableName,
       KeyConditionExpression: "follower_alias = :u",
-      ExpressionAttributeValues: {
-        ":u": userAlias,
-      },
+      ExpressionAttributeValues: { ":u": userAlias },
       Limit: pageSize,
       ScanIndexForward: true,
     };
@@ -47,10 +99,17 @@ export class DynamoFollowDao implements FollowDao {
     }
 
     const result = await this.ddb.send(new QueryCommand(params));
-    const items =
-      result.Items?.map((i) => ({ alias: i.followee_alias } as UserDto)) || [];
-    const hasMore = result.LastEvaluatedKey !== undefined;
-    return [items, hasMore];
+
+    const followeeAliases: string[] =
+      (result.Items ?? []).map((i) => i.followee_alias).filter(Boolean) || [];
+
+    const hasMore = !!result.LastEvaluatedKey;
+
+    if (followeeAliases.length === 0) return [[], hasMore];
+
+    const users = await this.batchGetUsersByAliases(followeeAliases);
+
+    return [users, hasMore];
   }
 
   public async getFollowerItems(
@@ -58,13 +117,11 @@ export class DynamoFollowDao implements FollowDao {
     pageSize: number,
     lastItem: UserDto | null
   ): Promise<[UserDto[], boolean]> {
-    const params: any = {
+    const params: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: "follow_index",
       KeyConditionExpression: "followee_alias = :u",
-      ExpressionAttributeValues: {
-        ":u": userAlias,
-      },
+      ExpressionAttributeValues: { ":u": userAlias },
       Limit: pageSize,
       ScanIndexForward: true,
     };
@@ -77,10 +134,17 @@ export class DynamoFollowDao implements FollowDao {
     }
 
     const result = await this.ddb.send(new QueryCommand(params));
-    const items =
-      result.Items?.map((i) => ({ alias: i.follower_alias } as UserDto)) || [];
-    const hasMore = result.LastEvaluatedKey !== undefined;
-    return [items, hasMore];
+
+    const followerAliases: string[] =
+      (result.Items ?? []).map((i) => i.follower_alias).filter(Boolean) || [];
+
+    const hasMore = !!result.LastEvaluatedKey;
+
+    if (followerAliases.length === 0) return [[], hasMore];
+
+    const users = await this.batchGetUsersByAliases(followerAliases);
+
+    return [users, hasMore];
   }
 
   public async getIsFollowerStatus(
