@@ -2,7 +2,6 @@ import { UserDto } from "tweeter-shared";
 import { Service } from "./Service";
 import { FollowDao } from "../dao/DaoInterfaces/FollowDao";
 import { UserDao } from "../dao/DaoInterfaces/UserDao";
-import { AuthDao } from "../dao/DaoInterfaces/AuthDao";
 
 export class FollowService implements Service {
   private userDao: UserDao;
@@ -50,7 +49,7 @@ export class FollowService implements Service {
   ): Promise<[followerCount: number, followeeCount: number]> {
     await this.followDao.follow(currentUser, userToFollow);
 
-    const followerCount = await this.getFollowerCount(userToFollow);
+    const followerCount = await this.getFollowerCount(currentUser);
     const followeeCount = await this.getFolloweeCount(currentUser);
 
     return [followerCount, followeeCount];

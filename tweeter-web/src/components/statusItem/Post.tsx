@@ -1,5 +1,4 @@
-import { Link } from "react-router-dom";
-import { Status, Type} from "tweeter-shared";
+import { Status, Type } from "tweeter-shared";
 import { useNavigateToUserHook } from "../appNavbar/NavToUserHooks";
 
 interface Props {
@@ -8,19 +7,22 @@ interface Props {
 }
 
 const Post = (props: Props) => {
-  const navigateToUser = useNavigateToUserHook();
+  const navigateToUserByAlias = useNavigateToUserHook();
 
   return (
     <>
       {props.status.segments.map((segment, index) =>
         segment.type === Type.alias ? (
-          <Link
+          <button
             key={index}
-            to={`${props.featurePath}/${segment.text}`}
-            onClick={navigateToUser}
+            className="btn btn-link p-0"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateToUserByAlias(segment.text, props.featurePath);
+            }}
           >
             {segment.text}
-          </Link>
+          </button>
         ) : segment.type === Type.url ? (
           <a
             key={index}

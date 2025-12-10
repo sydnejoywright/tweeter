@@ -25,7 +25,7 @@ class FollowService {
     }
     async follow(currentUser, userToFollow) {
         await this.followDao.follow(currentUser, userToFollow);
-        const followerCount = await this.getFollowerCount(userToFollow);
+        const followerCount = await this.getFollowerCount(currentUser);
         const followeeCount = await this.getFolloweeCount(currentUser);
         return [followerCount, followeeCount];
     }

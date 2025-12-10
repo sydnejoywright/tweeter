@@ -9,10 +9,6 @@ export const handler = async (
   request: GetUserRequest
 ): Promise<GetUserResponse> => {
   try {
-    // Authenticate the requester
-    await authService.authenticate(request.authToken);
-
-    // Get the user DTO
     const userDto = await userService.getUser(request.userAlias);
 
     if (!userDto) {
@@ -23,12 +19,11 @@ export const handler = async (
       };
     }
 
-    // Compute full S3 URL if needed
     const fullImageUrl =
       userDto.imageUrl && !userDto.imageUrl.startsWith("http")
         ? `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${userDto.imageUrl}`
         : userDto.imageUrl;
-    console.log("Computed full S3 URL:", fullImageUrl); // Return a new object without mutating the readonly DTO
+    console.log("Computed full S3 URL:", fullImageUrl);
     const userWithFullImageUrl = {
       ...userDto,
       imageUrl: fullImageUrl,
